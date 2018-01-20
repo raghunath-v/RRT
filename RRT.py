@@ -144,4 +144,7 @@ def build_rrt(q_init, K, delta_q):
         g.add_between_nearest(q_rand, delta_q)
     g.draw()
 
+#1. Place an inital node at (500,500)
+#2. Set K (num iterations) to 1000
+#3. Set delta_q (see RRT alg. for more) to 20
 build_rrt(Node(500, 500), 1000, 20)
