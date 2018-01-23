@@ -189,7 +189,7 @@ class Obstacle:
     def __repr__(self):
         return "[ "+self.x_left+", "+self.y_bottom+" ], [ "+self.x_right+", "+self.y_top+" ]"
 
-def build_rrt(q_init, K, delta_q):
+def build_rrt(q_init, K, delta_q, obs):
     """Builds an RRT"""
     g = Graph(WIDTH, HEIGHT)
     g.add_node(q_init, init=True)
@@ -201,14 +201,20 @@ def build_rrt(q_init, K, delta_q):
 
 WIDTH = 1000
 HEIGHT = 1000
-obs_1 = Obstacle(100, 200, 300, 400)
-obs_2 = Obstacle(500, 700, 600, 900)
-obs_3 = Obstacle(500, 600, 0, 200)
-obs = [obs_1, obs_2, obs_3]
-intial_node = Node(100,100)
+obs_1 = Obstacle(400,600, 400,600)
+obs_2 = Obstacle(400, 600, 600,1000)
+obs_3 = Obstacle(400,600, 0,400)
+obs_4 = Obstacle(0,300, 200,300)
+obs_5 = Obstacle(400,600, 800,1000)
+obs_6 = Obstacle(700, 1000, 200, 300)
+env_1 = [obs_1]
+env_2 = [obs_1, obs_2]
+env_3 = [obs_1, obs_3, obs_4, obs_5, obs_6]
+env = env_3
+intial_node = Node(100,500)
 goal_node = Node(900,100)
 
-g = build_rrt(intial_node, 1000, 20)
+g = build_rrt(intial_node, 1000, 20, env)
 # add the goal node to the nearest neihbor
 g.add_to_nearest(goal_node)
-g.draw(intial_node, goal_node, g.find_path(intial_node, goal_node), obs)
+g.draw(intial_node, goal_node, g.find_path(intial_node, goal_node), env)
