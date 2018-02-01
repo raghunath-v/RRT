@@ -1,10 +1,9 @@
 from graphics import *
 import numpy as np
+from Obstacle import Obstacle
 
 #Globals:
-WIN = GraphWin("P1", 200, 200)
-
-
+WIN = GraphWin("P1", 1000, 1000)
 
 class KinematicPoint:
     def __init__(self, vel_start, vel_goal, pos_start, pos_goal):
@@ -40,8 +39,15 @@ class KinematicPoint:
 
     def play(self):
         self.show()
+        '''
+        points = [[20,20],[100,20],[100,100],[20,100]]
+        obs = Obstacle(points)
+        obs_g = obs.get_graphical()
+        obs_g.setFill('blue')
+        obs_g.draw(WIN)
+        '''
         WIN.getMouse()
         WIN.close()
 
-p = KinematicPoint([0.9, -0.2], [0.5, -0.5], [1+100,100-2], [10+100,100-15])
+p = KinematicPoint([0.9, -0.2], [0.5, -0.5], [-15*10,2*10], [10*10, 15*10])
 p.play()
