@@ -18,7 +18,6 @@ class KinematicPoint:
         self.arrow = None
         self.body_radius = 10
         self.set_graphicals()
-        self.counter = 0
 
     def set_velocity(self, goal):
         # goal is of type Goal
@@ -58,12 +57,12 @@ class KinematicPoint:
     def set_graphicals(self):
         draw_x = g.scale(self.pos_x)
         draw_y = g.scale(self.pos_y)
-        if self.body:
+        if self.body is not None:
             self.body.undraw()
         self.body = Circle(Point(draw_x, draw_y), self.body_radius)
         self.body.setFill('yellow')
         self.body.draw(self.win)
-        if self.arrow:
+        if self.arrow is not None:
             self.arrow.undraw()
         self.arrow = Line(
             Point(draw_x, draw_y),

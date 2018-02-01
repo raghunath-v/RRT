@@ -6,13 +6,13 @@ from Goal import Goal
 class DynamicPoint:
     def __init__(self, vel_start, pos_start, dt, vel_max, acc_max, win):
         self.win = win
-        self.vel_x = vel_start[0]
-        self.vel_y = vel_start[1]
+        self.vel_x = 0.1
+        self.vel_y = 0.1
         self.pos_x = pos_start[0]
         self.pos_y = pos_start[1]
         self.acc_x = 0
         self.acc_y = 0
-        self.dt = dt
+        self.dt = 0.05
         self.vel_max = vel_max
         self.acc_max = acc_max
         self.dist_max = vel_max * dt
@@ -23,8 +23,14 @@ class DynamicPoint:
         self.body_radius = 10
         self.set_graphicals()
         self.counter = 0
+        self.hasacc = False
 
     def set_velocity(self, goal):
+
+        self.acc_x = (goal.vel_x**2  - self.vel_x**2) / 2*np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
+        self.acc_y = (goal.vel_y**2 - self.vel_y**2) / 2*np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
+
+        print(self.acc_x)
         # goal is of type Goal
         dist = np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
         # if the distance is within some reasonable limit
@@ -40,15 +46,13 @@ class DynamicPoint:
         dir_len =  np.sqrt(dir_x**2 + dir_y**2)
         dir_unit_x = dir_x/dir_len
         dir_unit_y = dir_y/dir_len
-        #self.vel_x = self.vel_max * dir_unit_x
-        #self.vel_y = self.vel_max * dir_unit_y
-        self.acc_x = self.acc_max * dir_unit_x
-        self.acc_y = self.acc_x * dir_unit_y
+                #self.acc_x = self.acc_max * dir_unit_x
+        #self.acc_y = self.acc_x * dir_unit_y
         # hit goal exactly in next time step if we can
-        if dist < self.dist_max:
-            v_fin = dist / self.dt
-            self.vel_x = v_fin * dir_unit_x
-            self.vel_y = v_fin * dir_unit_y
+        #if dist < self.dist_max:
+        #    v_fin = dist / self.dt
+        #    self.vel_x = v_fin * dir_unit_x
+        #    self.vel_y = v_fin * dir_unit_y
 
     def move(self):
         self.vel_x = self.vel_x + self.acc_x * self.dt
@@ -62,6 +66,7 @@ class DynamicPoint:
         self.body.draw(self.win)
         self.vel_arrow.draw(self.win)
         self.acc_arrow.draw(self.win)
+    
     def set_graphicals(self):
         draw_x = g.scale(self.pos_x)
         draw_y = g.scale(self.pos_y)

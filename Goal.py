@@ -4,8 +4,8 @@ import g_tools as g
 
 class Goal:
     def __init__(self, vel, pos, win):
-        self.vel_x = vel[0]
-        self.vel_y = vel[1]
+        self.vel_x = 0.2
+        self.vel_y = 0.8
         self.pos_x = pos[0]
         self.pos_y = pos[1]
         self.win = win
@@ -13,12 +13,12 @@ class Goal:
     
     def set_graphicals(self):
         # draw player
-        body = Circle(Point(g.scale(self.pos_x), g.scale(self.pos_y)), 7)
-        body.setFill('red')
+        self.body = Circle(Point(g.scale(self.pos_x), g.scale(self.pos_y)), 7)
+        self.body.setFill('red')
         # Note: downwards in Y is the positive direction for this graphics lib
-        arrow = Line(Point(g.scale(self.pos_x), g.scale(self.pos_y)),
+        self.arrow = Line(Point(g.scale(self.pos_x), g.scale(self.pos_y)),
             Point(g.scale(self.pos_x + self.vel_x), g.scale(self.pos_y + self.vel_y)))
-        arrow.setFill('black')
-        arrow.setArrow('last')
-        body.draw(self.win)
-        arrow.draw(self.win)
+        self.arrow.setFill('black')
+        self.arrow.setArrow('last')
+        self.body.draw(self.win)
+        self.arrow.draw(self.win)

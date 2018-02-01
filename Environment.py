@@ -19,14 +19,18 @@ class Environment:
         obs = list of lists of [x,y], each representing an obstacle
         bounding = list of [x,y] defining the bounding area
         '''
-        self.obstacles = [Obstacle(o) for o in obs]
-        self.bounding_area = BoundingArea(bounding)
-        self.Player = None
-        self.Goal = None
         canvas_width = 800
-        canvas_height = 900
+        canvas_height = 600
         self.win = GraphWin("area", canvas_width, canvas_height)
         self.win.yUp()
+        self.obstacles = [Obstacle(o,self.win) for o in obs]
+        self.bounding_area = BoundingArea(bounding, self.win)
+        self.player = None
+        self.goal = None
+
+    def calculate_path(self):
+        #rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal)
+        a=2
 
     def set_player(self, type, vel, pos, dt, v_max, **kwargs):
         if type == 0:
@@ -39,16 +43,13 @@ class Environment:
 
     def show(self):
         
-        # draw area
-        area_g = self.bounding_area.get_graphical()
-        area_g.draw(self.win)
+        # draw everything initially
+        self.bounding_area.set_graphicals()
+        for obs in self.obstacles:
+            obs.set_graphicals()
+
         self.goal.set_graphicals()
         self.player.set_graphicals()
-        # draw obstacles
-        for obs in self.obstacles:
-            obs_g = obs.get_graphical()
-            obs_g.draw(self.win)
-        # show
 
         while not self.player.finished:
             self.player.set_velocity(self.goal)
@@ -56,6 +57,7 @@ class Environment:
         print("Is finshed")
         self.win.getMouse()
         self.win.close()
+
 if __name__ == "__main__":
     #run stuff here
     with open("P1.json") as json_file:
@@ -76,4 +78,5 @@ if __name__ == "__main__":
     # run for dynamic point
     env.set_player(1, vel_start, pos_start, dt, v_max, acc_max=a_max)
     env.set_goal(vel_goal, pos_goal)
+    env.calculate_path()
     env.show()
