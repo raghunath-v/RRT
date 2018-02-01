@@ -4,6 +4,7 @@ import numpy as np
 from Obstacle import Obstacle
 from BoundingArea import BoundingArea
 from KinematicPoint import KinematicPoint
+from DynamicPoint import DynamicPoint
 from Goal import Goal
 
 class Environment: 
@@ -27,8 +28,11 @@ class Environment:
         self.win = GraphWin("area", canvas_width, canvas_height)
         self.win.yUp()
 
-    def set_player(self, type, vel, pos, dt, v_max):
-        self.player = KinematicPoint(vel, pos, dt, v_max, self.win)
+    def set_player(self, type, vel, pos, dt, v_max, **kwargs):
+        if type == 0:
+            self.player = KinematicPoint(vel, pos, dt, v_max, self.win)
+        if type == 1:
+            self.player  = DynamicPoint(vel, pos, dt, v_max, kwargs['acc_max'], self.win)
 
     def set_goal(self, vel, pos):
         self.goal = Goal(vel, pos, self.win)
@@ -65,7 +69,11 @@ if __name__ == "__main__":
     vel_goal = desc['vel_goal']
     dt = desc['vehicle_dt']
     v_max = desc['vehicle_v_max']
+    a_max = desc['vehicle_a_max']
     env = Environment(obstacles, bounding_poly)
-    env.set_player(0, vel_start, pos_start, dt, v_max)
+    # run for kinematic point
+    #env.set_player(0, vel_start, pos_start, dt, v_max)
+    # run for dynamic point
+    env.set_player(1, vel_start, pos_start, dt, v_max, acc_max=a_max)
     env.set_goal(vel_goal, pos_goal)
     env.show()
