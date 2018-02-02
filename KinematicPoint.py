@@ -49,11 +49,6 @@ class KinematicPoint:
         self.pos_y += self.dt*self.vel_y
         self.set_graphicals()
 
-    def draw(self):
-        # draw player
-        self.body.draw(self.win)
-        self.arrow.draw(self.win)
-
     def set_graphicals(self):
         draw_x = g.scale(self.pos_x)
         draw_y = g.scale(self.pos_y)
@@ -70,4 +65,3 @@ class KinematicPoint:
         self.arrow.setFill('black')
         self.arrow.setArrow("last")
         self.arrow.draw(self.win)
-        

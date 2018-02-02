@@ -1,31 +1,31 @@
 """An implementation of the RRT algorithm in python"""
 import random
+import json
 from collections import defaultdict
-from graphics import *
-import numpy as np
+from graphics import Circle, Line, GraphWin
 from Obstacle import Obstacle
+from Node import Node
 from KinematicPoint import KinematicPoint
 from BoundingArea import BoundingArea
 from Goal import Goal
-import json
-import g_tools as g_tools
 
 class RRT:
-    def __init__(self, bounding_area, obstacles, player, goal, delta_q, K, win, edges=[], directed=False):
+    def __init__(self, bounding_area, obstacles, player, goal, rrt_setup, win):
         # related to the program at a whole
         self.win = win
         self.drawables = None
+        self.drawable_path = None
         self.bounding_area = bounding_area
         self.obstacles = obstacles
         self.player = player
         self.goal = goal
         # regarding the graph part
         self.graph = defaultdict(set)
-        self.directed = directed
-        self.add_edges(edges)
         # Relating specifically to RRT
-        self.delta_q = delta_q 
-        self.K = K # number of its
+        self.delta_q = rrt_setup['delta_q']
+        self.min_x, self.max_x = rrt_setup['x_range'][0], rrt_setup['x_range'][1]
+        self.min_y, self.max_y = rrt_setup['y_range'][1], rrt_setup['y_range'][1]
+        self.K = rrt_setup['k']
         self.start_node = None
         self.goal_node = None
         self.path = None
@@ -43,8 +43,6 @@ class RRT:
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_to_nearest(self.goal_node)
         self.find_path()
-        self.set_graphicals()
-        self.remove_graphicals()
 
     def find_path(self):
         current_node = self.goal_node
@@ -52,6 +50,9 @@ class RRT:
         while current_node != self.start_node:
             current_node = current_node.parent
             self.path.append(current_node)
+    
+    def get_path(self):
+        return self.path
 
     def add_edges(self, edges):
         """ Adds edges (list of tuple pairs) to the graph"""
@@ -61,8 +62,7 @@ class RRT:
     def add(self, node_1, node_2):
         """"Add an edge between node_1 and node_2"""
         self.graph[node_1].add(node_2)
-        if not self.directed:
-            self.graph[node_2].add(node_1)
+        self.graph[node_2].add(node_1)
 
     # currently only used for adding the inital node
     def add_node(self, node):
@@ -101,14 +101,6 @@ class RRT:
             self.add(closest, new_node)
     
     def is_valid(self, new):
-        '''
-            Checks if the edge between new and old intersects
-            with any obstacle or bounding area and checks if 
-            new node appears inside valid playing area
-            TODO: Need to change this implementation for Dynamic
-        '''
-        # Check first of node is valid by doing ray casting to the right
-        # on all obstacles and bounding area. Validate if intersects are odd
         for obs in self.obstacles:
             if obs.contains(new.get_x(), new.get_y()):
                 return False
@@ -119,7 +111,7 @@ class RRT:
     
     def remove(self, node):
         """ Remove all references to a node"""
-        for ind, edges in self.graph.items():
+        for _, edges in self.graph.items():
             try:
                 edges.remove(node)
             except KeyError:
@@ -130,15 +122,15 @@ class RRT:
             pass
 
     def gen_random_node(self):
-        #
-        if random.randint(0,5) == 0:
+        if random.randint(0, 5) == 0:
             return Node(self.goal.pos_x, self.goal.pos_y)
         else:
-            return Node(random.uniform(-2,60), random.uniform(-2,60))
+            return Node(random.uniform(self.min_x, self.max_x), random.uniform(self.min_x, self.max_x))
 
     def set_graphicals(self):
         """Draws the graph"""
         self.drawables = []
+        self.drawable_path = []
         for node in self.graph:
             curr_loc = node.get_scaled_point()
             draw_node = Circle(curr_loc, 1)
@@ -148,70 +140,32 @@ class RRT:
                 if neighbor:
                     line = Line(curr_loc, neighbor.get_scaled_point())
                     self.drawables.append(line)
-        for i in range(1,len(self.path)-1):
+        for i in range(0,len(self.path)-1):
             node_1 = self.path[i]
             node_2 = self.path[i+1]
             cir = Circle(node_1.get_scaled_point(), 2)
             cir.setFill('Red')
             cir.setOutline('Red')
-            self.drawables.append(cir)
+            self.drawable_path.append(cir)
             lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
             lin.setOutline('Red')
-            self.drawables.append(lin)
+            self.drawable_path.append(lin)
+
         for drawable in self.drawables:
             drawable.draw(self.win)
+        for drawable in self.drawable_path:
+            drawable.draw(self.win)
 
-    def remove_graphicals(self):
-        for element in self.drawables:
-            element.undraw()
-        self.win.getMouse()
-        self.win.close()
+    def remove_graphicals(self, remove_path=False):
+        for drawable in self.drawables:
+            drawable.undraw()
+        if remove_path:
+            for drawable in self.drawable_path:
+                drawable.undraw()
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, dict(self.graph))
 
-class Node:
-    """A simple node class"""
-    def __init__(self, loc_x, loc_y):
-        self._x = loc_x
-        self._y = loc_y
-        self.parent = None
-
-    def set_parent(self, parent):
-        self.parent = parent
-
-    def get_x(self):
-        """Returns the x coordinate of the node"""
-        return self._x
-
-    def get_y(self):
-        """Returns the y coordinate of the node"""
-        return self._y
-    
-    def get_point(self):
-        return Point(self._x, self._y)
-
-    def get_scaled_point(self):
-        return Point(g_tools.scale(self._x), g_tools.scale(self._y))
-
-    def get_close(self, node, delta_q):
-        """
-            Returns a new node that is on the line
-            between this node and the input node in
-            a delta_q distance from this node
-        """
-        # Dist is the distance between the two nodes
-        dist = self.dist_to(node)
-        new_x = self._x + (delta_q/dist)*(node.get_x() - self._x)
-        new_y = self._y + (delta_q/dist)*(node.get_y() - self._y)
-        return Node(new_x, new_y)
-
-    def dist_to(self, node):
-        """Returns the distance from this node to another"""
-        return np.sqrt((self._x - node.get_x())**2 + (self._y - node.get_y())**2)
-
-    def __repr__(self):
-        return "( " + str(self._x) + ", " + str(self._y) + " )"
 
 if __name__ == "__main__":
     #run stuff here
@@ -236,7 +190,7 @@ if __name__ == "__main__":
     bounding_area.set_graphicals()
     for obs in obstacles:
         obs.set_graphicals()
-    g.set_graphicals()
-    p.set_graphicals()
-    r = RRT(bounding_area, obstacles, p, g, 2, 500, win)
+    #g.set_graphicals()
+    #p.set_graphicals()
+    r = RRT(bounding_area, obstacles, p, g, 2, 500, [-2,60], [-2,60], win)
     r.generate()

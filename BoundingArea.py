@@ -1,11 +1,10 @@
-from graphics import *
-import g_tools as g
-import numpy as np
+from graphics import Polygon, color_rgb
+from g_tools import gen_point_list, scale_points, ray_intersects_segment
 
 class BoundingArea:
     def __init__(self, points, win):
         self.points = points
-        self.graphical_points = g.gen_point_list(g.scale_points(points))
+        self.graphical_points = gen_point_list(scale_points(points))
         self.win = win
         self.segments = self.gen_segment()
 
@@ -19,7 +18,7 @@ class BoundingArea:
     def contains(self, x, y):
         intersects = 0
         for s in self.segments:
-            if g.ray_intersects_segment(x,y,s):
+            if ray_intersects_segment(x,y,s):
                 intersects+=1
         return intersects % 2 != 0
 

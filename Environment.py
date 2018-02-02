@@ -1,11 +1,11 @@
 import json
-from graphics import *
-import numpy as np
+from graphics import GraphWin
 from Obstacle import Obstacle
 from BoundingArea import BoundingArea
 from KinematicPoint import KinematicPoint
 from DynamicPoint import DynamicPoint
 from Goal import Goal
+from RRT import RRT
 
 class Environment: 
     '''
@@ -13,50 +13,44 @@ class Environment:
     models, generating obstacles and visualizing it.
     '''
 
-    def __init__(self, obs, bounding):
+    def __init__(self, obs, bounding, player, goal, win):
         '''
         m_type : [0,1,2,3] = [the models available]
         obs = list of lists of [x,y], each representing an obstacle
         bounding = list of [x,y] defining the bounding area
         '''
-        canvas_width = 800
-        canvas_height = 600
-        self.win = GraphWin("area", canvas_width, canvas_height)
+        self.win = win
         self.win.yUp()
         self.obstacles = [Obstacle(o,self.win) for o in obs]
         self.bounding_area = BoundingArea(bounding, self.win)
-        self.player = None
-        self.goal = None
+        self.player = player
+        self.goal = goal
+        self.rrt = None
 
-    def calculate_path(self):
-        #rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal)
-        a=2
+    def gen_rrt(self, rrt_setup):
+        self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
+            rrt_setup, self.win)
+        self.rrt.generate()
+        self.rrt.set_graphicals()
+        self.rrt.remove_graphicals()
 
-    def set_player(self, type, vel, pos, dt, v_max, **kwargs):
-        if type == 0:
-            self.player = KinematicPoint(vel, pos, dt, v_max, self.win)
-        if type == 1:
-            self.player  = DynamicPoint(vel, pos, dt, v_max, kwargs['acc_max'], self.win)
-
-    def set_goal(self, vel, pos):
-        self.goal = Goal(vel, pos, self.win)
-
-    def show(self):
-        
-        # draw everything initially
-        self.bounding_area.set_graphicals()
-        for obs in self.obstacles:
-            obs.set_graphicals()
-
-        self.goal.set_graphicals()
-        self.player.set_graphicals()
-
+    def run(self, rrt_setup):
+        self.init_draw()
+        self.gen_rrt(rrt_setup)
         while not self.player.finished:
             self.player.set_velocity(self.goal)
             self.player.move()
         print("Is finshed")
         self.win.getMouse()
         self.win.close()
+    
+    def init_draw(self):
+         # draw everything initially
+        self.bounding_area.set_graphicals()
+        for obs in self.obstacles:
+            obs.set_graphicals()
+        self.player.set_graphicals()
+        self.goal.set_graphicals()
 
 if __name__ == "__main__":
     #run stuff here
@@ -72,11 +66,11 @@ if __name__ == "__main__":
     dt = desc['vehicle_dt']
     v_max = desc['vehicle_v_max']
     a_max = desc['vehicle_a_max']
-    env = Environment(obstacles, bounding_poly)
-    # run for kinematic point
-    #env.set_player(0, vel_start, pos_start, dt, v_max)
-    # run for dynamic point
-    env.set_player(1, vel_start, pos_start, dt, v_max, acc_max=a_max)
-    env.set_goal(vel_goal, pos_goal)
-    env.calculate_path()
-    env.show()
+    canvas_width = 800
+    canvas_height = 600
+    win = GraphWin("area", canvas_width, canvas_height)
+    player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
+    goal = Goal(vel_goal, pos_goal, win)
+    env = Environment(obstacles, bounding_poly, player, goal, win)
+    rrt_setup = {'delta_q': 2, 'k':500, 'x_range': [-2,60], 'y_range': [-2,60]}
+    env.run(rrt_setup)

@@ -1,6 +1,6 @@
-from graphics import *
+from graphics import Circle, Point, Line
 import numpy as np
-import g_tools as g
+from g_tools import scale
 from Goal import Goal
 
 class DynamicPoint:
@@ -60,16 +60,10 @@ class DynamicPoint:
         self.pos_x += self.dt*self.vel_x
         self.pos_y += self.dt*self.vel_y
         self.set_graphicals()
-
-    def draw(self):
-        # draw player
-        self.body.draw(self.win)
-        self.vel_arrow.draw(self.win)
-        self.acc_arrow.draw(self.win)
     
     def set_graphicals(self):
-        draw_x = g.scale(self.pos_x)
-        draw_y = g.scale(self.pos_y)
+        draw_x = scale(self.pos_x)
+        draw_y = scale(self.pos_y)
         if self.body:
             self.body.undraw()
         self.body = Circle(Point(draw_x, draw_y), self.body_radius)
@@ -79,7 +73,7 @@ class DynamicPoint:
             self.vel_arrow.undraw()
         self.vel_arrow = Line(
             Point(draw_x, draw_y),
-            Point(g.scale(self.pos_x +self.vel_x), g.scale(self.pos_y + self.vel_y)))
+            Point(scale(self.pos_x +self.vel_x), scale(self.pos_y + self.vel_y)))
         self.vel_arrow.setFill('black')
         self.vel_arrow.setArrow("last")
         self.vel_arrow.draw(self.win)
@@ -87,7 +81,7 @@ class DynamicPoint:
             self.acc_arrow.undraw()
         self.acc_arrow = Line(
             Point(draw_x, draw_y),
-            Point(g.scale(self.pos_x +self.acc_x), g.scale(self.pos_y + self.acc_y)))
+            Point(scale(self.pos_x +self.acc_x), scale(self.pos_y + self.acc_y)))
         self.acc_arrow.setFill('blue')
         self.acc_arrow.setArrow('last')
         self.acc_arrow.draw(self.win)

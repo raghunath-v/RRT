@@ -1,7 +1,6 @@
-from graphics import *
+from graphics import Polygon
 import numpy as np
-import g_tools as g
-
+from g_tools import ray_intersects_segment, gen_point_list, scale_points
 class Obstacle:
     """
         An obstacle has both a graphical and a
@@ -12,7 +11,7 @@ class Obstacle:
         # is in a [x,y] configuration.
         self.points = points
         self.segments = self.gen_segment()
-        self.graphical_points = g.gen_point_list(g.scale_points(points))
+        self.graphical_points = gen_point_list(scale_points(points))
         self.win = win
 
     def set_graphicals(self):
@@ -31,6 +30,6 @@ class Obstacle:
     def contains(self, x, y):
         intersects = 0
         for s in self.segments:
-            if g.ray_intersects_segment(x,y,s):
+            if ray_intersects_segment(x,y,s):
                 intersects+=1
         return intersects % 2 != 0
