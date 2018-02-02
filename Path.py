@@ -274,8 +274,8 @@ def get_dubin_paths(P1, V1, P2, V2):
 
 
 if __name__=='__main__':
-    init = Node(150,300)
-    goal = Node(400,200)
+    init = Node(150, 300)
+    goal = Node(400, 200)
     v_in = np.array([20, 20])
     v_fin = np.array([30, 30])
     a_max = 0.5
