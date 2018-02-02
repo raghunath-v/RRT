@@ -1,6 +1,7 @@
 """An implementation of the RRT algorithm in python"""
 import random
 import json
+import time
 from collections import defaultdict
 from graphics import Circle, Line, GraphWin
 from Obstacle import Obstacle
@@ -8,9 +9,9 @@ from Node import Node
 from KinematicPoint import KinematicPoint
 from BoundingArea import BoundingArea
 from Goal import Goal
-
+from g_tools import emit_verbose
 class RRT:
-    def __init__(self, bounding_area, obstacles, player, goal, rrt_setup, win):
+    def __init__(self, bounding_area, obstacles, player, goal, rrt_setup, win, verbose=True):
         # related to the program at a whole
         self.win = win
         self.drawables = None
@@ -30,20 +31,27 @@ class RRT:
         self.goal_node = None
         self.path = None
         self.optimal_path = None
+        # Other stuff
+        self.verbose = verbose
 
     def generate(self):
-        """Builds an RRT"""
         #q_init will be the starting location of the player
         self.start_node = Node(self.player.pos_x, self.player.pos_y)
         self.add_node(self.start_node)
-        for k in range(self.K):
+        t = time.time()
+        self.simple_rrt()
+        emit_verbose("Generating graph for RRT took", self.verbose, var=time.time()-t)
+        self.find_path()
+
+    def simple_rrt(self):
+        """Builds an RRT"""
+        for _ in range(self.K):
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
             self.add_between_nearest(q_rand)
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_to_nearest(self.goal_node)
-        self.find_path()
 
     def find_path(self):
         current_node = self.goal_node
@@ -63,6 +71,7 @@ class RRT:
         node_idx = 1
         has_found = False
         next_segment = None
+        t = time.time()
         while not finished:
             if node_idx >= len(self.path):
                 self.optimal_path.append(next_segment)
@@ -77,9 +86,11 @@ class RRT:
                 if not has_found:
                     self.optimal_path.append(self.path[node_idx])
                     node_idx+=1
-                self.optimal_path.append(next_segment)
-                node_idx = next_idx + 1
-                has_found = False
+                else:
+                    self.optimal_path.append(next_segment)
+                    node_idx = next_idx + 1
+                    has_found = False
+        emit_verbose("Optimizing path took", self.verbose, var=time.time()-t)
     def get_path(self):
         return self.path
 
@@ -166,15 +177,19 @@ class RRT:
         """Draws the graph"""
         self.drawables = []
         self.drawable_path = []
+        t = time.time()
+        '''
         for node in self.graph:
             curr_loc = node.get_scaled_point()
             draw_node = Circle(curr_loc, 1)
             draw_node.setFill('red')
-            self.drawables.append(draw_node)
+            #self.drawables.append(draw_node)
             for neighbor in self.graph[node]:
                 if neighbor:
                     line = Line(curr_loc, neighbor.get_scaled_point())
+                    line.draw(self.win)
                     self.drawables.append(line)
+        '''
         for i in range(0,len(self.path)-1):
             node_1 = self.path[i]
             node_2 = self.path[i+1]
@@ -184,6 +199,7 @@ class RRT:
             self.drawable_path.append(cir)
             lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
             lin.setOutline('Red')
+            lin.draw(self.win)
             self.drawable_path.append(lin)
         
         for i in range(0,len(self.optimal_path)-1):
@@ -195,12 +211,14 @@ class RRT:
             self.drawable_path.append(cir)
             lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
             lin.setOutline('Blue')
+            lin.draw(self.win)
             self.drawable_path.append(lin)
 
-        for drawable in self.drawables:
-            drawable.draw(self.win)
-        for drawable in self.drawable_path:
-            drawable.draw(self.win)
+        #for drawable in self.drawables:
+        #    drawable.draw(self.win)
+        #for drawable in self.drawable_path:
+        #    drawable.draw(self.win)
+        emit_verbose("Drawing RRT took", self.verbose, var=time.time()-t)
 
     def remove_graphicals(self, remove_path=False):
         for drawable in self.drawables:

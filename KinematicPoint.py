@@ -23,10 +23,13 @@ class KinematicPoint:
         self.set_graphicals()
         self.at_node = True
         self.next_node = False
+        self.total_time = 0
 
     def set_velocity(self, goal):
         if self.at_node:
             if self.path_idx == self.node_count - 1:
+                self.vel_x = goal.vel_x
+                self.vel_y = goal.vel_y
                 self.finished = True
                 return
              # Aim at next node
@@ -54,6 +57,8 @@ class KinematicPoint:
             self.vel_x = v_fin * dir_unit_x
             self.vel_y = v_fin * dir_unit_y
             self.at_node = True
+        
+        self.total_time+=self.dt
 
     def set_auto_velocity(self, goal):
         # goal is of type Goal

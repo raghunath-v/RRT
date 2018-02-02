@@ -71,4 +71,10 @@ def segments_intersect(ax, ay, bx, by, s):
         [cx-bx, dx-bx],
         [cy-by, dy-by]]))
     return a*c < 0 and b*d < 0
-    
+
+def emit_verbose(string, verbose, var=None):
+    if verbose:
+        if var:
+            print(string+": "+str(var))
+        else:
+            print(string)
