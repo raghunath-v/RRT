@@ -75,10 +75,11 @@ class RRT:
                 node_idx+=1
             else:
                 if not has_found:
-                    self.optimal.path.append(self.path[node_idx])
+                    self.optimal_path.append(self.path[node_idx])
                     node_idx+=1
                 self.optimal_path.append(next_segment)
                 node_idx = next_idx + 1
+                has_found = False
     def get_path(self):
         return self.path
 
