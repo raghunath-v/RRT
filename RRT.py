@@ -14,6 +14,7 @@ class RRT:
     def __init__(self, bounding_area, obstacles, player, goal, delta_q, K, win, edges=[], directed=False):
         # related to the program at a whole
         self.win = win
+        self.drawables = None
         self.bounding_area = bounding_area
         self.obstacles = obstacles
         self.player = player
@@ -42,7 +43,8 @@ class RRT:
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_to_nearest(self.goal_node)
         self.find_path()
-        self.draw()
+        self.set_graphicals()
+        self.remove_graphicals()
 
     def find_path(self):
         current_node = self.goal_node
@@ -134,30 +136,36 @@ class RRT:
         else:
             return Node(random.uniform(-2,60), random.uniform(-2,60))
 
-    def draw(self):
+    def set_graphicals(self):
         """Draws the graph"""
+        self.drawables = []
         for node in self.graph:
             curr_loc = node.get_scaled_point()
             draw_node = Circle(curr_loc, 1)
             draw_node.setFill('red')
-            draw_node.draw(self.win)
+            self.drawables.append(draw_node)
             for neighbor in self.graph[node]:
                 if neighbor:
-                    Line(curr_loc, neighbor.get_scaled_point()).draw(self.win)
-
+                    line = Line(curr_loc, neighbor.get_scaled_point())
+                    self.drawables.append(line)
         for i in range(1,len(self.path)-1):
             node_1 = self.path[i]
             node_2 = self.path[i+1]
             cir = Circle(node_1.get_scaled_point(), 2)
             cir.setFill('Red')
             cir.setOutline('Red')
-            cir.draw(win)
+            self.drawables.append(cir)
             lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
             lin.setOutline('Red')
-            lin.draw(win)
+            self.drawables.append(lin)
+        for drawable in self.drawables:
+            drawable.draw(self.win)
 
-        win.getMouse()
-        win.close()
+    def remove_graphicals(self):
+        for element in self.drawables:
+            element.undraw()
+        self.win.getMouse()
+        self.win.close()
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, dict(self.graph))
