@@ -99,7 +99,6 @@ class RRT:
         # on all obstacles and bounding area. Validate if intersects are odd
         for obs in self.obstacles:
             if obs.contains(new.get_x(), new.get_y()):
-                print('bailing because of obstacle')
                 return False
         if not self.bounding_area.contains(new.get_x(), new.get_y()):
             return False
@@ -129,7 +128,7 @@ class RRT:
         """Draws the graph"""
         for node in self.graph:
             curr_loc = node.get_scaled_point()
-            Circle(curr_loc, 5).draw(self.win)
+            #Circle(curr_loc, 5).draw(self.win)
             for neighbor in self.graph[node]:
                 if neighbor:
                     Line(curr_loc, neighbor.get_scaled_point()).draw(self.win)
@@ -204,5 +203,5 @@ if __name__ == "__main__":
         obs.set_graphicals()
     g.set_graphicals()
     p.set_graphicals()
-    r = RRT(bounding_area, obstacles, p, g, 1, 500, win)
+    r = RRT(bounding_area, obstacles, p, g, 2, 1000, win)
     r.generate()
