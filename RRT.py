@@ -25,18 +25,31 @@ class RRT:
         # Relating specifically to RRT
         self.delta_q = delta_q 
         self.K = K # number of its
+        self.start_node = None
+        self.goal_node = None
+        self.path = None
 
     def generate(self):
         """Builds an RRT"""
         #q_init will be the starting location of the player
-        q_init = Node(self.player.pos_x, self.player.pos_y)
-        self.add_node(q_init)
+        self.start_node = Node(self.player.pos_x, self.player.pos_y)
+        self.add_node(self.start_node)
         for k in range(self.K):
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
             self.add_between_nearest(q_rand)
+        self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
+        self.add_to_nearest(self.goal_node)
+        self.find_path()
         self.draw()
+
+    def find_path(self):
+        current_node = self.goal_node
+        self.path = [current_node]
+        while current_node != self.start_node:
+            current_node = current_node.parent
+            self.path.append(current_node)
 
     def add_edges(self, edges):
         """ Adds edges (list of tuple pairs) to the graph"""
@@ -58,12 +71,13 @@ class RRT:
     def add_to_nearest(self, node):
         """Adds a node to the neighbor that is closest"""
         min_dist = float('inf')
-        contender = None
-        for neighbor in self.graph:
-            if node.dist_to(neighbor) < min_dist:
-                contender = neighbor
-                min_dist = node.dist_to(contender)
-        self.add(node, contender)
+        nearest = None
+        for graph_node in self.graph:
+            if node.dist_to(graph_node) < min_dist:
+                nearest = graph_node
+                min_dist = node.dist_to(nearest)
+        node.set_parent(nearest)
+        self.add(nearest, node)
 
     # currently used to add all other nodes in general
     def add_between_nearest(self, node):
@@ -78,15 +92,11 @@ class RRT:
             if node.dist_to(graph_node) < min_dist:
                 closest = graph_node
                 min_dist = node.dist_to(closest)
-        
         # validate the to-be-added node
         new_node = closest.get_close(node, self.delta_q)
         if self.is_valid(new_node):
+            new_node.set_parent(closest)
             self.add(closest, new_node)
-        
-        #else:
-            # try again
-        #    self.add_between_nearest(self.gen_random_node())
     
     def is_valid(self, new):
         '''
@@ -118,20 +128,33 @@ class RRT:
             pass
 
     def gen_random_node(self):
-        # Needs logic here for correctly
-        # generating a random point within 
-        # the area and not within an obstacle
-        # TODO: Change how we test for new nodes
-        return Node(random.uniform(-2,60), random.uniform(-2,60))
+        #
+        if random.randint(0,5) == 0:
+            return Node(self.goal.pos_x, self.goal.pos_y)
+        else:
+            return Node(random.uniform(-2,60), random.uniform(-2,60))
 
     def draw(self):
         """Draws the graph"""
         for node in self.graph:
             curr_loc = node.get_scaled_point()
-            #Circle(curr_loc, 5).draw(self.win)
+            draw_node = Circle(curr_loc, 1)
+            draw_node.setFill('red')
+            draw_node.draw(self.win)
             for neighbor in self.graph[node]:
                 if neighbor:
                     Line(curr_loc, neighbor.get_scaled_point()).draw(self.win)
+
+        for i in range(1,len(self.path)-1):
+            node_1 = self.path[i]
+            node_2 = self.path[i+1]
+            cir = Circle(node_1.get_scaled_point(), 2)
+            cir.setFill('Red')
+            cir.setOutline('Red')
+            cir.draw(win)
+            lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
+            lin.setOutline('Red')
+            lin.draw(win)
 
         win.getMouse()
         win.close()
@@ -144,6 +167,10 @@ class Node:
     def __init__(self, loc_x, loc_y):
         self._x = loc_x
         self._y = loc_y
+        self.parent = None
+
+    def set_parent(self, parent):
+        self.parent = parent
 
     def get_x(self):
         """Returns the x coordinate of the node"""
@@ -203,5 +230,5 @@ if __name__ == "__main__":
         obs.set_graphicals()
     g.set_graphicals()
     p.set_graphicals()
-    r = RRT(bounding_area, obstacles, p, g, 2, 1000, win)
+    r = RRT(bounding_area, obstacles, p, g, 2, 500, win)
     r.generate()
