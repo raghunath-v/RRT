@@ -29,6 +29,7 @@ class RRT:
         self.start_node = None
         self.goal_node = None
         self.path = None
+        self.optimal_path = None
 
     def generate(self):
         """Builds an RRT"""
@@ -50,8 +51,38 @@ class RRT:
         while current_node != self.start_node:
             current_node = current_node.parent
             self.path.append(current_node)
+        self.path.reverse()
+        self.optimize_path()
     
+    def optimize_path(self):
+        # Iterate over all edges in path
+        # and check if they can be removed
+        # without any collision
+        self.optimal_path = [self.path[0]]
+        finished = False
+        node_idx = 1
+        has_found = False
+        next_segment = None
+        while not finished:
+            if node_idx >= len(self.path):
+                self.optimal_path.append(next_segment)
+                finished = True
+                break
+            if self.is_segment_valid(self.optimal_path[-1], self.path[node_idx]):
+                has_found = True
+                next_segment = self.path[node_idx]
+                next_idx = node_idx
+                node_idx+=1
+            else:
+                if not has_found:
+                    self.optimal.path.append(self.path[node_idx])
+                    node_idx+=1
+                self.optimal_path.append(next_segment)
+                node_idx = next_idx + 1
     def get_path(self):
+        return self.path
+
+    def get_optimal_path(self):
         return self.path
 
     def add_edges(self, edges):
@@ -102,12 +133,15 @@ class RRT:
     
     def is_valid(self, new):
         for obs in self.obstacles:
-            if obs.contains(new.get_x(), new.get_y()):
+            if obs.contains(new.x, new.y):
                 return False
-        if not self.bounding_area.contains(new.get_x(), new.get_y()):
-            return False
-        else:
-            return True
+        return self.bounding_area.contains(new.x, new.y)
+    
+    def is_segment_valid(self, n_1, n_2):
+        for obs in self.obstacles:
+            if obs.intersects_with_segment(n_1.x, n_1.y, n_2.x, n_2.y):
+                return False
+        return not self.bounding_area.intersects_with_segment(n_1.x, n_1.y, n_2.x, n_2.y)
     
     def remove(self, node):
         """ Remove all references to a node"""
@@ -150,6 +184,17 @@ class RRT:
             lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
             lin.setOutline('Red')
             self.drawable_path.append(lin)
+        
+        for i in range(0,len(self.optimal_path)-1):
+            node_1 = self.optimal_path[i]
+            node_2 = self.optimal_path[i+1]
+            cir = Circle(node_1.get_scaled_point(), 2)
+            cir.setFill('Blue')
+            cir.setOutline('Blue')
+            self.drawable_path.append(cir)
+            lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
+            lin.setOutline('Blue')
+            self.drawable_path.append(lin)
 
         for drawable in self.drawables:
             drawable.draw(self.win)
@@ -165,32 +210,3 @@ class RRT:
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, dict(self.graph))
-
-
-if __name__ == "__main__":
-    #run stuff here
-    with open("P1.json") as json_file:
-        desc = json.load(json_file)
-    
-    bounding_poly = desc['bounding_polygon']
-    pos_start = desc['pos_start']
-    pos_goal = desc['pos_goal']
-    vel_start = desc['vel_start']
-    vel_goal = desc['vel_goal']
-    dt = desc['vehicle_dt']
-    v_max = desc['vehicle_v_max']
-    a_max = desc['vehicle_a_max']
-    win = GraphWin("area", 600, 600)
-    win.yUp()
-    p = KinematicPoint(vel_start, pos_start, dt, v_max, win)
-    g = Goal(vel_goal, pos_goal, win)
-    obs = [desc[key] for key, val in desc.items() if key.startswith('obs')]
-    obstacles = [Obstacle(o,win) for o in obs]
-    bounding_area = BoundingArea(bounding_poly, win)
-    bounding_area.set_graphicals()
-    for obs in obstacles:
-        obs.set_graphicals()
-    #g.set_graphicals()
-    #p.set_graphicals()
-    r = RRT(bounding_area, obstacles, p, g, 2, 500, [-2,60], [-2,60], win)
-    r.generate()

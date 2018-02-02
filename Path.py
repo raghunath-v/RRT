@@ -4,8 +4,6 @@ from graphics import *
 import numpy as np
 import math as math
 
-
-
 class Graph:
     """Simple graph class"""
     def __init__(self, width, height, edges=[], directed=False):

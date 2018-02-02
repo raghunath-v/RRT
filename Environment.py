@@ -31,13 +31,15 @@ class Environment:
         self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
             rrt_setup, self.win)
         self.rrt.generate()
+        self.player.add_path(self.rrt.optimal_path)
         self.rrt.set_graphicals()
-        self.rrt.remove_graphicals()
+        #self.rrt.remove_graphicals()
 
     def run(self, rrt_setup):
         self.init_draw()
         self.gen_rrt(rrt_setup)
         while not self.player.finished:
+            #self.player.set_auto_velocity(self.goal)
             self.player.set_velocity(self.goal)
             self.player.move()
         print("Is finshed")
