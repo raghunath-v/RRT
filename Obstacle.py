@@ -1,6 +1,6 @@
 from graphics import Polygon
 import numpy as np
-from g_tools import ray_intersects_segment, gen_point_list, scale_points
+from g_tools import ray_intersects_segment, gen_point_list, scale_points, segments_intersect
 class Obstacle:
     """
         An obstacle has both a graphical and a
@@ -33,3 +33,9 @@ class Obstacle:
             if ray_intersects_segment(x,y,s):
                 intersects+=1
         return intersects % 2 != 0
+
+    def intersects_with_segment(self, x_1, y_1, x_2, y_2):
+        for s in self.segments:
+            if segments_intersect(x_1, y_1, x_2, y_2, s):
+                return True
+        return False

@@ -1,5 +1,5 @@
 from graphics import Polygon, color_rgb
-from g_tools import gen_point_list, scale_points, ray_intersects_segment
+from g_tools import gen_point_list, scale_points, ray_intersects_segment, segments_intersect
 
 class BoundingArea:
     def __init__(self, points, win):
@@ -21,6 +21,12 @@ class BoundingArea:
             if ray_intersects_segment(x,y,s):
                 intersects+=1
         return intersects % 2 != 0
+
+    def intersects_with_segment(self, x_1, y_1, x_2, y_2):
+        for s in self.segments:
+            if segments_intersect(x_1, y_1, x_2, y_2, s):
+                return True
+        return False
 
     def set_graphicals(self):
         """Returns the graphical representation"""

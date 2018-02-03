@@ -33,15 +33,12 @@ def ray_intersects_segment(x, y, segment):
         # increase by small amount to avoid overflow
         p_x+=eps
         p_y+=eps
- 
     intersect = False
-
     # check if point in y range of segment or if 
     # point to right of segment
     if (p_y > b_y or p_y < a_y) or (
         p_x > max(a_x, b_x)):
         return False
-    
     # if in range and to left, it intersects
     if p_x < min(a_x, b_x):
         intersect = True
@@ -56,3 +53,28 @@ def ray_intersects_segment(x, y, segment):
             m_blue = huge
         intersect = m_blue >= m_red
     return intersect
+
+def segments_intersect(ax, ay, bx, by, s):
+    cx, cy = s[0][0], s[0][1]
+    dx, dy = s[1][0], s[1][1]
+    # calculate the four determinants
+    a = np.linalg.det(np.array([
+        [ax-cx, bx-cx],
+        [ay-cy, by-cy]]))
+    b = np.linalg.det(np.array([
+        [cx-ax, dx-ax],
+        [cy-ay, dy-ay]]))
+    c = np.linalg.det(np.array([
+        [ax-dx, bx-dx],
+        [ay-dy, by-dy]]))
+    d = np.linalg.det(np.array([
+        [cx-bx, dx-bx],
+        [cy-by, dy-by]]))
+    return a*c < 0 and b*d < 0
+
+def emit_verbose(string, verbose, var=None):
+    if verbose:
+        if var:
+            print(string+": "+str(var))
+        else:
+            print(string)

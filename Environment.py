@@ -31,16 +31,25 @@ class Environment:
         self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
             rrt_setup, self.win)
         self.rrt.generate()
+        self.player.add_path(self.rrt.optimal_path)
         self.rrt.set_graphicals()
-        self.rrt.remove_graphicals()
+        #self.rrt.remove_graphicals()
 
     def run(self, rrt_setup):
         self.init_draw()
         self.gen_rrt(rrt_setup)
         while not self.player.finished:
+            #self.player.set_auto_velocity(self.goal)
             self.player.set_velocity(self.goal)
             self.player.move()
         print("Is finshed")
+        print("Position:")
+        print("goal: ", self.goal.pos_x,",",self.goal.pos_y)
+        print("player: ", self.player.pos_x,",",self.player.pos_y)
+        print("Velocity:")
+        print("goal: ", self.goal.vel_x,",",self.goal.vel_y)
+        print("player: ", self.player.vel_x,",",self.player.vel_y)
+        print("Time taken to reach goal (dt): ", player.total_time)
         self.win.getMouse()
         self.win.close()
     
@@ -72,5 +81,5 @@ if __name__ == "__main__":
     player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
     goal = Goal(vel_goal, pos_goal, win)
     env = Environment(obstacles, bounding_poly, player, goal, win)
-    rrt_setup = {'delta_q': 2, 'k':500, 'x_range': [-2,60], 'y_range': [-2,60]}
+    rrt_setup = {'delta_q': 2, 'k':3000, 'x_range': [-2,60], 'y_range': [-2,60]}
     env.run(rrt_setup)

@@ -17,9 +17,50 @@ class KinematicPoint:
         self.body = None
         self.arrow = None
         self.body_radius = 10
+        self.path = None
+        self.node_count = 0
+        self.path_idx = 0
         self.set_graphicals()
+        self.at_node = True
+        self.next_node = False
+        self.total_time = 0
 
     def set_velocity(self, goal):
+        if self.at_node:
+            if self.path_idx == self.node_count - 1:
+                self.vel_x = goal.vel_x
+                self.vel_y = goal.vel_y
+                self.finished = True
+                return
+             # Aim at next node
+            self.path_idx+=1
+            self.next_node = self.path[self.path_idx]
+            dir_x = self.next_node.x - self.pos_x
+            dir_y = self.next_node.y - self.pos_y
+            dir_len =  np.sqrt(dir_x**2 + dir_y**2)
+            dir_unit_x = dir_x/dir_len
+            dir_unit_y = dir_y/dir_len
+            self.vel_x = self.vel_max * dir_unit_x
+            self.vel_y = self.vel_max * dir_unit_y
+            self.at_node = False
+    
+        dist = np.sqrt((self.pos_x - self.next_node.x)**2 + (self.pos_y - self.next_node.y)**2)
+
+        # hit next node exactly in next time step if we can
+        if dist < self.dist_max:
+            v_fin = dist / self.dt
+            dir_x = self.next_node.x - self.pos_x
+            dir_y = self.next_node.y - self.pos_y
+            dir_len =  np.sqrt(dir_x**2 + dir_y**2)
+            dir_unit_x = dir_x/dir_len
+            dir_unit_y = dir_y/dir_len
+            self.vel_x = v_fin * dir_unit_x
+            self.vel_y = v_fin * dir_unit_y
+            self.at_node = True
+        
+        self.total_time+=self.dt
+
+    def set_auto_velocity(self, goal):
         # goal is of type Goal
         dist = np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
         # if the distance is within some reasonable limit
@@ -48,6 +89,11 @@ class KinematicPoint:
         self.pos_x += self.dt*self.vel_x
         self.pos_y += self.dt*self.vel_y
         self.set_graphicals()
+
+    def add_path(self, path):
+        # Path is a list of Nodes
+        self.path = path
+        self.node_count = len(path)
 
     def set_graphicals(self):
         draw_x = g.scale(self.pos_x)
