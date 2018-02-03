@@ -56,14 +56,14 @@ def get_tangents(Circle1, Circle2):
                 math.ceil(C2.y + R2 * (math.sin(-(math.pi - alpha) + theta))))
 
     if check_swap and swapped:
-        if (dir1 == 'L' and dir2 == 'L'):
+        if (dir1 == -1 and dir2 == -1):
             tangents.append((T1_2, T1_1))
-        if (dir1 == 'R' and dir2 == 'R'):
+        if (dir1 == 1 and dir2 == 1):
             tangents.append((T2_2, T2_1))
     else:
-        if (dir1 == 'L' and dir2 == 'L'):
+        if (dir1 == -1 and dir2 == -1):
             tangents.append((T1_1, T1_2))
-        if (dir1 == 'R' and dir2 == 'R'):
+        if (dir1 == 1 and dir2 == 1):
             tangents.append((T2_1, T2_2))
 
     #Inner tangents
@@ -77,14 +77,14 @@ def get_tangents(Circle1, Circle2):
                 math.ceil(C2.y + R2 * (math.sin(math.pi - beta + theta))))
 
     if check_swap and swapped:
-        if (dir1 == 'L' and dir2 == 'R'):
+        if (dir1 == -1 and dir2 == 1):
             tangents.append((T1_2, T1_1))
-        if (dir1 == 'R' and dir2 == 'L'):
+        if (dir1 == 1 and dir2 == -1):
             tangents.append((T2_2, T2_1))
     else:
-        if (dir1 == 'L' and dir2 == 'R'):
+        if (dir1 == -1 and dir2 == 1):
             tangents.append((T1_1, T1_2))
-        if (dir1 == 'R' and dir2 == 'L'):
+        if (dir1 == 1 and dir2 == -1):
             tangents.append((T2_1, T2_2))
 
     return tangents
@@ -119,24 +119,24 @@ def getDubinCircles(node, vel, acc):
     # First Circle
     centre1 = Node(node.x + k, node.y + k * slope)
     if vel[1] > 0:
-        direc = 'L'
+        direc = -1
     else:
-        direc = 'R'
+        direc = 1
     circle1 = DubinCircle(centre1, radius, direc)
 
     # Second Circle
     centre2 = Node(node.x - k, node.y - k * slope)
     if vel[1] > 0:
-        direc = 'L'
+        direc = -1
     else:
-        direc = 'R'
+        direc = 1
     circle2 = DubinCircle(centre2, radius, direc)
 
     return circle1, circle2
 
 def get_velocity_series(path, vel_start, vel_goal, vel_max):
     vel_series = [vel_start]
-    for i in range(1,len(path)-1):
+    for i in range(1, len(path)-1):
         theta = math.atan(path[i].slope_to(path[i+1]))
         #TODO: We slow down ALOT when we are going through a circle
         # find a way to NOT do that.
@@ -148,7 +148,7 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
 
 def get_acceleration_series(path, acc_max):
     acc_series = [acc_max]
-    for i in range(1,len(path)-1):
+    for i in range(1, len(path)-1):
         acc_series.append(acc_max)
     acc_series.append(acc_max)
     return acc_series

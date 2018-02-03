@@ -32,9 +32,9 @@ class DubinCircle:
                        p2.y - self.c.y])
         theta = atan2(v2[1], v2[0]) - atan2(v1[1], v1[0])
 
-        if theta<0 and self.dir == 'L':
+        if theta<0 and self.dir == -1:
             theta = theta + 2*pi
-        elif theta>0 and self.dir == 'R':
+        elif theta>0 and self.dir == 1:
             theta = theta - 2*pi
 
         return abs(theta*self.r)
