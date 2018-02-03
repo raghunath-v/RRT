@@ -137,7 +137,7 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
         theta = math.atan(path[i].slope_to(path[i+1]))
         vel_x = vel_max * math.cos(theta)
         vel_y = vel_max * math.sin(theta)
-        vel_series.append([vel_x, vel_y])
+        vel_series.append(np.array([vel_x, vel_y]))
     vel_series.append(vel_goal)
     return vel_series
 
@@ -149,7 +149,9 @@ def get_acceleration_series(path, acc_max):
     return acc_series
 
 def find_acc(u, v, S):
-    acceleration = (v ** 2 - u ** 2) / 2 * S
+    u_mag = math.sqrt(u[0]**2 + u[1]**2)
+    v_mag = math.sqrt(v[0] ** 2 + v[1] ** 2)
+    acceleration = (v_mag ** 2 - u_mag ** 2) / 2 * S
     return acceleration
 
 def create_sling_path(path, vel_series, acc_series):
