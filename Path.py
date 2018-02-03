@@ -242,11 +242,15 @@ def get_tangents(Circle1, Circle2):
     T2_2 = Node(math.ceil(C2.get_x() + R2 * (math.cos(math.pi - beta + theta))),
                 math.ceil(C2.get_y() + R2 * (math.sin(math.pi - beta + theta))))
     if check_swap and swapped:
-        tangents.append((T1_1, T1_2))
-        tangents.append((T2_1, T2_2))
+        if (dir1 == 'L' and dir2 == 'R'):
+            tangents.append((T1_1, T1_2))
+        if (dir1 == 'R' and dir2 == 'L'):
+            tangents.append((T2_1, T2_2))
     else:
-        tangents.append((T1_2, T1_1))
-        tangents.append((T2_2, T2_1))
+        if (dir1 == 'L' and dir2 == 'R'):
+            tangents.append((T1_2, T1_1))
+        if (dir1 == 'R' and dir2 == 'L'):
+            tangents.append((T2_2, T2_1))
 
     return tangents
 
@@ -284,8 +288,8 @@ class DubinCircle:
 if __name__=='__main__':
     goal = Node(400, 300)
     init = Node(150, 200)
-    v_in = np.array([30, -30])
-    v_fin = np.array([20, 20])
+    v_in = np.array([30, 30])
+    v_fin = np.array([20, -20])
     a_max = 0.5
 
     orient = math.atan(v_in[1]/v_in[0])
@@ -306,18 +310,18 @@ if __name__=='__main__':
     k_init = radius_init / math.sqrt(1 + init_slope**2)
     # Left circle
     C1_cen = Node(init.get_x() + k_init, init.get_y() + k_init * init_slope)
-    if init_slope>0:
-        direction = 'R'
-    else:
+    if v_in[1]>0:
         direction = 'L'
+    else:
+        direction = 'R'
     C1_init = DubinCircle(C1_cen, radius_init, direction)
 
     # Right circle
     C2_cen = Node(init.get_x() - k_init, init.get_y() - k_init * init_slope)
-    if init_slope>0:
-        direction = 'R'
-    else:
+    if v_in[1]>0:
         direction = 'L'
+    else:
+        direction = 'R'
     C2_init = DubinCircle(C2_cen, radius_init, direction)
 
 
@@ -325,10 +329,10 @@ if __name__=='__main__':
     k_goal = radius_goal / math.sqrt(1 + goal_slope**2)
     #Left circle
     C1_cen = Node(goal.get_x() + k_goal, goal.get_y() + k_goal * goal_slope)
-    if goal_slope>0:
-        direction = 'R'
-    else:
+    if v_fin[1]>0:
         direction = 'L'
+    else:
+        direction = 'R'
     C1_goal = DubinCircle(C1_cen, radius_goal, direction)
 
     #Right circle
@@ -339,6 +343,7 @@ if __name__=='__main__':
         direction = 'L'
     C2_goal = DubinCircle(C2_cen, radius_goal, direction)
 
+    print(C1_init.get_dir(), C1_goal.get_dir())
     tangents = get_tangents(C1_init, C1_goal)
 
 
