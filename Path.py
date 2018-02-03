@@ -163,16 +163,25 @@ def create_sling_path(path, vel_series, acc_series):
     for i in range(len(path)-1):
         best_dubin_path = getBestDubinPath(path[i], vel_series[i], acc_series[i],
                          path[i+1], vel_series[i+1], acc_series[i+1])
-        new_path.append(best_dubin_path)
+
+        # Insert new nodes from dubin path
+        new_path.append(best_dubin_path[0])
+        new_path.append(best_dubin_path[1])
+        new_path.append(best_dubin_path[2])
+
+        # Insert new velocities for dubin path
         new_vel_series.append(vel_series[i])
         new_vel_series.append(vel_series[i])
         new_vel_series.append(vel_series[i+1])
+
+        # Insert new accelerations for dubin path
+        # Find the acceleration needed to go from tangent points 1 to 2
         new_acc_series.append(acc_series[i])
-        #Find the acceleration needed to go from tangent points 1 to 2
         new_acc_series.append(find_acc(vel_series[i], vel_series[i+1],
                                        best_dubin_path[1][0].dist_to(best_dubin_path[2][0])))
         new_acc_series.append(acc_series[i+1])
 
+    # Append goal node, velocity and and acceleration
     new_path.append([path[len(path) - 1], 0])
     new_vel_series.append(vel_series[len(path) - 1])
     new_acc_series.append(acc_series[len(path) - 1])
