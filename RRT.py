@@ -272,7 +272,7 @@ class RRT:
         else:
             return Node(random.uniform(self.min_x, self.max_x), random.uniform(self.min_x, self.max_x))
 
-    def set_graphicals(self, draw_nodes=True, draw_edges=True):
+    def set_graphicals(self, draw_nodes=True, draw_edges=False):
         """Draws the graph"""
         self.drawables = []
         self.drawable_path = []

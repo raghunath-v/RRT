@@ -8,7 +8,7 @@ def gen_point_list(points):
     return [Point(x,y) for x,y in points]
 
 def scale(x):
-    scale_factor = 10
+    scale_factor = 14
     offset = 100
     return scale_factor*x + offset
 

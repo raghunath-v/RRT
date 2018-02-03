@@ -35,36 +35,30 @@ class DynamicPoint:
         self.vel_arrow = None
         self.acc_arrow = None
         self.win = win
+        # for other stuff
+        self.current_action = None
 
     def set_velocity(self, goal):
+        # are we going into a circle?
+        if(self.current_action[1] !=0):
 
-        self.acc_x = (goal.vel_x**2  - self.vel_x**2) / 2*np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
-        self.acc_y = (goal.vel_y**2 - self.vel_y**2) / 2*np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
+            # we are going into a circle
+            # have we arrived at the next node?
+            if self.pos_x == self.sling_path[-1].x and 
+                self.pos_y == self.sling_path[-1].y:
+                # we have arrived at the net node
+                self
+            else:
+                self.move_circular()
+        else:
+            # we are moving straight
+            self.move()
 
-        # goal is of type Goal
-        dist = np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
-        # if the distance is within some reasonable limit
-        if dist <= 0.1:
-            self.vel_x = goal.vel_x
-            self.vel_y = goal.vel_y
-            self.finished = True
-            return
-        
-        # Aim at goal
-        dir_x = goal.pos_x - self.pos_x
-        dir_y = goal.pos_y - self.pos_y
-        dir_len =  np.sqrt(dir_x**2 + dir_y**2)
-        dir_unit_x = dir_x/dir_len
-        dir_unit_y = dir_y/dir_len
-                #self.acc_x = self.acc_max * dir_unit_x
-        #self.acc_y = self.acc_x * dir_unit_y
-        # hit goal exactly in next time step if we can
-        #if dist < self.dist_max:
-        #    v_fin = dist / self.dt
-        #    self.vel_x = v_fin * dir_unit_x
-        #    self.vel_y = v_fin * dir_unit_y
+
 
         self.total_time+=self.dt
+
+    def move_circular(self):
 
     def move(self):
         self.vel_x = self.vel_x + self.acc_x * self.dt
@@ -84,6 +78,12 @@ class DynamicPoint:
         acc_series = get_acceleration_series(self.path, self.acc_max)
         self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series)
         self.node_count_sling = len(self.sling_path)
+        self.sling_path = reversed(self.sling_path)
+        self.sling_vel = reversed(self.sling_vel)
+        self.sling_acc = reversed(self.sling_acc)
+        self.current_action = self.sling_path.pop()
+        self.current_vel = self.sling_vel.pop()
+        self.current_acc = self.sling_acc.pop()
 
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
@@ -109,20 +109,13 @@ class DynamicPoint:
         self.acc_arrow.setFill('blue')
         self.acc_arrow.setArrow('last')
         self.acc_arrow.draw(self.win)
+        '''
         if self.sling_path is not None:
-            print(self.sling_path)
             for s in self.sling_path:
-                '''
-                [[node,dir], [node, dir], ...]
-                    [
-                        [Node, dir],
-                        [Node, dir],
-                        ...
-                    ]
-                '''
-                print(s)
-                node = Circle(s[0][0].get_point(), 4)
+                node = s[0]
+                direction = s[1]
+                node = Circle(node.get_scaled_point(), 4)
                 node.setFill('red')
                 node.draw(self.win)
-
+        '''
         

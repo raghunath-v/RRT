@@ -39,6 +39,7 @@ def get_tangents(Circle1, Circle2):
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
 
+    print(R1, R2)
     if(R1 + R2 > d):
         print(R1, R2)
         print(d)
