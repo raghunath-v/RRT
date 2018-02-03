@@ -1,6 +1,7 @@
 from graphics import Circle, Point, Line
 import numpy as np
 from g_tools import scale
+from Path import *
 from Goal import Goal
 
 class DynamicPoint:
@@ -8,6 +9,8 @@ class DynamicPoint:
         # dynamics related
         self.vel_x = 0.1
         self.vel_y = 0.1
+        self.vel_start = vel_start
+        self.vel_curr = vel_start
         self.pos_x = pos_start[0]
         self.pos_y = pos_start[1]
         self.acc_x = 0
@@ -19,7 +22,9 @@ class DynamicPoint:
         # path planning related
         self.finished = False
         self.path = None
+        self.sling_path = None
         self.node_count = 0
+        self.node_count_sling = 0
         self.at_node = True
         # graphics related
         self.body = None
@@ -68,6 +73,13 @@ class DynamicPoint:
         # A path is a list of nodes
         self.path = path
         self.node_count = len(path)
+
+    def add_sling_path(self, path, vel_goal):
+        # A path is a list of nodes
+        vel_series = get_velocity_series(path, self.vel_start, vel_goal)
+        acc_series = get_acceleration_series(path, self.acc_max)
+        self.sling_path = create_sling_path(path, vel_series, acc_series)
+        self.node_count_sling = len(path)
     
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
