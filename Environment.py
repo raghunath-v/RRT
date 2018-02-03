@@ -32,7 +32,7 @@ class Environment:
             rrt_setup, self.win)
         self.rrt.generate()
         self.player.add_path(self.rrt.optimal_path)
-        self.player.add_sling_path(self.goal)
+        #self.player.add_sling_path(self.goal)
         self.rrt.set_graphicals()
         #self.rrt.remove_graphicals()
 
@@ -79,8 +79,8 @@ if __name__ == "__main__":
     canvas_width = 800
     canvas_height = 600
     win = GraphWin("area", canvas_width, canvas_height)
-    #player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
-    player = DynamicPoint(vel_start, pos_start, dt, v_max, a_max, win)
+    player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
+    #player = DynamicPoint(vel_start, pos_start, dt, v_max, a_max, win)
     goal = Goal(vel_goal, pos_goal, win)
     env = Environment(obstacles, bounding_poly, player, goal, win)
     rrt_setup = {'delta_q': 1, 'k':500, 'x_range': [-2,60], 'y_range': [-2,60], 'strategy': 1}

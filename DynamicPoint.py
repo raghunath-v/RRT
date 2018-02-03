@@ -41,7 +41,6 @@ class DynamicPoint:
         self.acc_x = (goal.vel_x**2  - self.vel_x**2) / 2*np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
         self.acc_y = (goal.vel_y**2 - self.vel_y**2) / 2*np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
 
-        print(self.acc_x)
         # goal is of type Goal
         dist = np.sqrt((self.pos_x - goal.pos_x)**2 + (self.pos_y - goal.pos_y)**2)
         # if the distance is within some reasonable limit
@@ -83,11 +82,9 @@ class DynamicPoint:
         # A path is a list of nodes
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
         acc_series = get_acceleration_series(self.path, self.acc_max)
-        print(vel_series)
-        print(acc_series)
         self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series)
         self.node_count_sling = len(self.sling_path)
-    
+
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
@@ -112,5 +109,20 @@ class DynamicPoint:
         self.acc_arrow.setFill('blue')
         self.acc_arrow.setArrow('last')
         self.acc_arrow.draw(self.win)
+        if self.sling_path is not None:
+            print(self.sling_path)
+            for s in self.sling_path:
+                '''
+                [[node,dir], [node, dir], ...]
+                    [
+                        [Node, dir],
+                        [Node, dir],
+                        ...
+                    ]
+                '''
+                print(s)
+                node = Circle(s[0][0].get_point(), 4)
+                node.setFill('red')
+                node.draw(self.win)
 
         

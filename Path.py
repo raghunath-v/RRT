@@ -35,10 +35,13 @@ def get_tangents(Circle1, Circle2):
         C2 = C1
         C1 = temp
         swapped = True
-        print("Swapping")
 
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
+
+    if(R1 + R2 > d):
+        print(R1, R2)
+        print(d)
     alpha = math.acos((R1-R2)/d)
     beta = math.acos((R1+R2)/d)
 
@@ -135,8 +138,10 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
     vel_series = [vel_start]
     for i in range(1,len(path)-1):
         theta = math.atan(path[i].slope_to(path[i+1]))
-        vel_x = vel_max * math.cos(theta)
-        vel_y = vel_max * math.sin(theta)
+        #TODO: We slow down ALOT when we are going through a circle
+        # find a way to NOT do that.
+        vel_x = vel_max * math.cos(theta) / 10
+        vel_y = vel_max * math.sin(theta) / 10
         vel_series.append(np.array([vel_x, vel_y]))
     vel_series.append(vel_goal)
     return vel_series
