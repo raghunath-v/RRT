@@ -5,7 +5,7 @@ from Goal import Goal
 
 class DynamicPoint:
     def __init__(self, vel_start, pos_start, dt, vel_max, acc_max, win):
-        self.win = win
+        # dynamics related
         self.vel_x = 0.1
         self.vel_y = 0.1
         self.pos_x = pos_start[0]
@@ -16,14 +16,17 @@ class DynamicPoint:
         self.vel_max = vel_max
         self.acc_max = acc_max
         self.dist_max = vel_max * dt
+        # path planning related
         self.finished = False
+        self.path = None
+        self.node_count = 0
+        self.at_node = True
+        # graphics related
         self.body = None
+        self.body_radius = 10
         self.vel_arrow = None
         self.acc_arrow = None
-        self.body_radius = 10
-        self.set_graphicals()
-        self.counter = 0
-        self.hasacc = False
+        self.win = win
 
     def set_velocity(self, goal):
 
@@ -60,6 +63,11 @@ class DynamicPoint:
         self.pos_x += self.dt*self.vel_x
         self.pos_y += self.dt*self.vel_y
         self.set_graphicals()
+    
+    def add_path(self, path):
+        # A path is a list of nodes
+        self.path = path
+        self.node_count = len(path)
     
     def set_graphicals(self):
         draw_x = scale(self.pos_x)

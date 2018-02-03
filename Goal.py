@@ -8,7 +8,6 @@ class Goal:
         self.pos_x = pos[0]
         self.pos_y = pos[1]
         self.win = win
-        self.set_graphicals()
     
     def set_graphicals(self):
         # draw player
