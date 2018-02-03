@@ -134,7 +134,10 @@ def getDubinCircles(node, vel, acc):
 def get_velocity_series(path, vel_start, vel_goal, vel_max):
     vel_series = [vel_start]
     for i in range(1,len(path)-1):
-        vel_series.append(vel_max)
+        theta = math.atan(path[i].slope_to(path[i+1]))
+        vel_x = vel_max * math.cos(theta)
+        vel_y = vel_max * math.sin(theta)
+        vel_series.append([vel_x, vel_y])
     vel_series.append(vel_goal)
     return vel_series
 
