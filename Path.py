@@ -259,15 +259,9 @@ def getDubinCircles(node, vel, acc):
 
 if __name__=='__main__':
     goal = Node(400, 300)
-<<<<<<< HEAD
     init = Node(150, 200)
     v_in = np.array([-30, 30])
     v_fin = np.array([-20, -20])
-=======
-    init = Node(400, 30)
-    v_in = np.array([30, 30])
-    v_fin = np.array([20, -20])
->>>>>>> df1bf5ffba9d7d6e8a1fde1932db82b543180cb9
     a_max = 0.5
 
     WIDTH = 600
