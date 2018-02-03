@@ -34,7 +34,7 @@ class RRT:
         self.optimal_path = None
         self.strategy = rrt_setup['strategy']
         # Regarding RRT*
-        self.star_dist = 4
+        self.star_dist = 2
         # Other stuff
         self.verbose = verbose
 
@@ -77,6 +77,8 @@ class RRT:
                         if self.is_segment_valid(q_new, q_best_parent):
                             q_new.set_goal_dist(q_best_parent.goal_dist + q_new.dist_to(q_best_parent))
                             q_new.set_parent(q_best_parent)
+                            for q in q_all_near:
+                                self.rewire(q, q_new)
                             self.add(q_new, q_best_parent)
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_to_nearest(self.goal_node)
@@ -197,13 +199,19 @@ class RRT:
                 best_dist = node.goal_dist + target_node.dist_to(node)
         return best_parent
     
-    def rewire(self, near_nodes, target_node):
+    def rewire(self, near_node, target_node):
         """
-            For all nodes that are near the target node,
-            check if their cost to goal is reduced by choosing
+            For a node that appears near the target node,
+            check if its cost to goal is reduced by choosing
             the target node as parent instead of their current
-            parent. If it is, set their parent to the target.
+            parent. If it is, set its parent to the target.
         """
+        if target_node.goal_dist + near_node.dist_to(target_node) < near_node.goal_dist:
+            # Do rewiring
+            self.remove_as_child(near_node)
+            near_node.set_goal_dist(target_node.goal_dist + near_node.dist_to(target_node))
+            near_node.set_parent(target_node)
+            self.add(target_node, near_node)
     
     # currently used to add all other nodes in general
     def add_between_nearest(self, node):
@@ -248,6 +256,14 @@ class RRT:
         except KeyError:
             pass
 
+    def remove_as_child(self, node):
+        """ Remove all references to a node"""
+        for _, edges in self.graph.items():
+            try:
+                edges.remove(node)
+            except KeyError:
+                pass
+
     # A random node (with bias) is generated,
     # it is not neceserally a legal node
     def gen_random_node(self):
@@ -256,7 +272,7 @@ class RRT:
         else:
             return Node(random.uniform(self.min_x, self.max_x), random.uniform(self.min_x, self.max_x))
 
-    def set_graphicals(self, draw_nodes=True, draw_edges=False):
+    def set_graphicals(self, draw_nodes=True, draw_edges=True):
         """Draws the graph"""
         self.drawables = []
         self.drawable_path = []
