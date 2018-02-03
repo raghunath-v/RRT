@@ -16,7 +16,6 @@ def get_radius(v,acc):
 
 def get_tangents(Circle1, Circle2):
     """The function returns only one tangent for directional circles"""
-
     C1 = Circle1.get_centre()
     R1 = Circle1.get_radius()
     dir1 = Circle1.get_dir()
@@ -26,10 +25,9 @@ def get_tangents(Circle1, Circle2):
 
     check_swap = True
     swapped = False
-
     tangents = []
 
-    if check_swap and (C1.x > C2.x):  #To get
+    if check_swap and (C1.x > C2.x):
         temp = R2
         R2 = R1
         R1 = temp
@@ -39,13 +37,12 @@ def get_tangents(Circle1, Circle2):
         swapped = True
         print("Swapping")
 
-    #Tangent 1
-
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
     alpha = math.acos((R1-R2)/d)
     beta = math.acos((R1+R2)/d)
-    #Outer tangents only
+
+    #Outer tangents
     T1_1 = Node(math.ceil(C1.x + R1 * (math.cos(alpha + theta))),
                 math.ceil(C1.y + R1 * (math.sin(alpha + theta))))
     T1_2 = Node(math.ceil(C2.x + R2 * (math.cos(math.pi - alpha + theta))),
@@ -54,6 +51,7 @@ def get_tangents(Circle1, Circle2):
                 math.ceil(C1.y + R1 * (math.sin(-alpha + theta))))
     T2_2 = Node(math.ceil(C2.x + R2 * (math.cos(-(math.pi - alpha) + theta))),
                 math.ceil(C2.y + R2 * (math.sin(-(math.pi - alpha) + theta))))
+
     if check_swap and swapped:
         if (dir1 == 'L' and dir2 == 'L'):
             tangents.append((T1_2, T1_1))
@@ -74,6 +72,7 @@ def get_tangents(Circle1, Circle2):
                 math.ceil(C1.y + R1 * (math.sin(-beta + theta))))
     T2_2 = Node(math.ceil(C2.x + R2 * (math.cos(math.pi - beta + theta))),
                 math.ceil(C2.y + R2 * (math.sin(math.pi - beta + theta))))
+
     if check_swap and swapped:
         if (dir1 == 'L' and dir2 == 'R'):
             tangents.append((T1_2, T1_1))
@@ -144,16 +143,33 @@ def get_acceleration_series(path, acc_max):
         acc_series.append(acc_max)
     acc_series.append(acc_max)
 
+def find_acc(u, v, S):
+    acceleration = (v ** 2 - u ** 2) / 2 * S
+    return acceleration
+
 def create_sling_path(path, vel_series, acc_series):
     #get_velocity_series(path, vel_start, vel_goal)
     #get_acceleration_series(path, acc_max)
     new_path = []
+    new_vel_series = []
+    new_acc_series = []
     for i in range(len(path)-1):
         best_dubin_path = getBestDubinPath(path[i], vel_series[i], acc_series[i],
                          path[i+1], vel_series[i+1], acc_series[i+1])
         new_path.append(best_dubin_path)
+        new_vel_series.append(vel_series[i])
+        new_vel_series.append(vel_series[i])
+        new_vel_series.append(vel_series[i+1])
+        new_acc_series.append(acc_series[i])
+        #Find the acceleration needed to go from tangent points 1 to 2
+        new_acc_series.append(find_acc(vel_series[i], vel_series[i+1],
+                                       best_dubin_path[1][0].dist_to(best_dubin_path[2][0])))
+        new_acc_series.append(acc_series[i+1])
 
-    return new_path
+    new_path.append([path[len(path) - 1], 0])
+    new_vel_series.append(vel_series[len(path) - 1])
+    new_acc_series.append(acc_series[len(path) - 1])
+    return new_path, new_vel_series, new_acc_series
 
 
 if __name__=='__main__': #Test for dynamic

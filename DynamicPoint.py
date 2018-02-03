@@ -23,6 +23,8 @@ class DynamicPoint:
         self.finished = False
         self.path = None
         self.sling_path = None
+        self.sling_vel = None
+        self.sling_acc = None
         self.node_count = 0
         self.node_count_sling = 0
         self.at_node = True
@@ -78,8 +80,8 @@ class DynamicPoint:
         # A path is a list of nodes
         vel_series = get_velocity_series(path, self.vel_start, vel_goal)
         acc_series = get_acceleration_series(path, self.acc_max)
-        self.sling_path = create_sling_path(path, vel_series, acc_series)
-        self.node_count_sling = len(path)
+        self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(path, vel_series, acc_series)
+        self.node_count_sling = len(self.sling_path)
     
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
