@@ -2,6 +2,7 @@
 import random
 import json
 import time
+import sys
 from collections import defaultdict
 from graphics import Circle, Line, GraphWin
 from Obstacle import Obstacle
@@ -84,9 +85,14 @@ class RRT:
         t = time.time()
         while not finished:
             if node_idx >= len(self.path):
-                self.optimal_path.append(next_segment)
-                finished = True
-                break
+                if(next_segment is not None):
+                    self.optimal_path.append(next_segment)
+                    finished = True
+                    break
+                else:
+                    print('Too few nodes, k too low or no valid way to goal')
+                    print('Optimal path: ', self.optimal_path)
+                    sys.exit(0)
             if self.is_segment_valid(self.optimal_path[-1], self.path[node_idx]):
                 has_found = True
                 next_segment = self.path[node_idx]
@@ -101,6 +107,7 @@ class RRT:
                     node_idx = next_idx + 1
                     has_found = False
         emit_verbose("Optimizing path took", self.verbose, var=time.time()-t)
+      
     def get_path(self):
         return self.path
 
@@ -218,23 +225,26 @@ class RRT:
         else:
             return Node(random.uniform(self.min_x, self.max_x), random.uniform(self.min_x, self.max_x))
 
-    def set_graphicals(self):
+    def set_graphicals(self, draw_nodes=True, draw_edges=False):
         """Draws the graph"""
         self.drawables = []
         self.drawable_path = []
         t = time.time()
-        '''
-        for node in self.graph:
-            curr_loc = node.get_scaled_point()
-            draw_node = Circle(curr_loc, 1)
-            draw_node.setFill('red')
-            #self.drawables.append(draw_node)
-            for neighbor in self.graph[node]:
-                if neighbor:
-                    line = Line(curr_loc, neighbor.get_scaled_point())
-                    line.draw(self.win)
-                    self.drawables.append(line)
-        '''
+        if draw_nodes or draw_edges:
+            for node in self.graph:
+                curr_loc = node.get_scaled_point()
+                if draw_nodes:
+                    draw_node = Circle(curr_loc, 1)
+                    draw_node.setFill('red')
+                    draw_node.draw(self.win)
+                    self.drawables.append(draw_node)
+                if draw_edges:
+                    for neighbor in self.graph[node]:
+                        if neighbor:
+                            line = Line(curr_loc, neighbor.get_scaled_point())
+                            line.draw(self.win)
+                            self.drawables.append(line)
+
         for i in range(0,len(self.path)-1):
             node_1 = self.path[i]
             node_2 = self.path[i+1]
@@ -246,7 +256,7 @@ class RRT:
             lin.setOutline('Red')
             lin.draw(self.win)
             self.drawable_path.append(lin)
-        
+        print(self.optimal_path)
         for i in range(0,len(self.optimal_path)-1):
             node_1 = self.optimal_path[i]
             node_2 = self.optimal_path[i+1]

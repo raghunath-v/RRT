@@ -285,7 +285,7 @@ class DubinCircle:
 
 if __name__=='__main__':
     goal = Node(400, 300)
-    init = Node(150, 200)
+    init = Node(400, 30)
     v_in = np.array([30, 30])
     v_fin = np.array([20, -20])
     a_max = 0.5

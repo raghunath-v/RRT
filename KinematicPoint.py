@@ -5,25 +5,29 @@ from Goal import Goal
 
 class KinematicPoint:
     def __init__(self, vel_start, pos_start, dt, vel_max, win):
-        self.win = win
+        # dynamics related
         self.vel_x = vel_start[0]
         self.vel_y = vel_start[1]
+        self.vel_max = vel_max
         self.pos_x = pos_start[0]
         self.pos_y = pos_start[1]
         self.dt = dt
-        self.vel_max = vel_max
         self.dist_max = vel_max * dt
-        self.finished = False
-        self.body = None
-        self.arrow = None
-        self.body_radius = 10
+        
+        # path planning related
         self.path = None
         self.node_count = 0
         self.path_idx = 0
-        self.set_graphicals()
         self.at_node = True
         self.next_node = False
+        self.finished = False
         self.total_time = 0
+        
+        # graphics related
+        self.body = None
+        self.arrow = None
+        self.body_radius = 10
+        self.win = win
 
     def set_velocity(self, goal):
         if self.at_node:
