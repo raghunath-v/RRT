@@ -7,6 +7,10 @@ class Node:
         self.x = loc_x
         self.y = loc_y
         self.parent = None
+        self.goal_dist = 0
+
+    def set_goal_dist(self, dist):
+        self.goal_dist = dist
 
     def set_parent(self, parent):
         self.parent = parent

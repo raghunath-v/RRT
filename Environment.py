@@ -81,5 +81,5 @@ if __name__ == "__main__":
     player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
     goal = Goal(vel_goal, pos_goal, win)
     env = Environment(obstacles, bounding_poly, player, goal, win)
-    rrt_setup = {'delta_q': 2, 'k':500, 'x_range': [-2,60], 'y_range': [-2,60]}
+    rrt_setup = {'delta_q': 1, 'k':1000, 'x_range': [-2,60], 'y_range': [-2,60], 'strategy': 0}
     env.run(rrt_setup)
