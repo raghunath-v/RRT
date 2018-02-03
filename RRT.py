@@ -53,6 +53,16 @@ class RRT:
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_to_nearest(self.goal_node)
 
+    def rrt_star(self):
+        for _ in range(self.K):
+            q_rand = self.gen_random_node()
+            while not self.is_valid(q_rand):
+                q_rand = self.gen_random_node()
+            q_near = self.find_nearest(q_rand)
+
+        self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
+        self.add_to_nearest(self.goal_node)
+
     def find_path(self):
         current_node = self.goal_node
         self.path = [current_node]
@@ -124,6 +134,41 @@ class RRT:
         node.set_parent(nearest)
         self.add(nearest, node)
 
+    def find_nearest(self, target_node):
+        """
+            Finds a node in the graph that is nearest
+            to a node (euclidian distance)
+        """
+        min_dist = float('inf')
+        nearest = None
+        for graph_node in self.graph:
+            if target_node.dist_to(graph_node) < min_dist:
+                nearest = graph_node
+                min_dist = target_node.dist_to(nearest)
+        return nearest
+
+    def find_all_near(self, target_node):
+        """
+            Finds all nodes that are within a circle
+            of certain radius from node
+        """
+
+    def select_best_parent(self, near_nodes, target_node):
+        """
+            From the nodes (list), select the node
+            that, through itself, results in the least
+            distance from the goal node to the target node
+        """
+    
+    def rewire(self, near_nodes, target_node):
+        """
+            For all nodes that are near the target node,
+            check if their cost to goal is reduced by choosing
+            the target node as parent instead of their current
+            parent. If it is, set their parent to the target.
+        """
+
+    
     # currently used to add all other nodes in general
     def add_between_nearest(self, node):
         """
