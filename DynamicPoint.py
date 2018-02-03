@@ -9,8 +9,8 @@ class DynamicPoint:
         # dynamics related
         self.vel_x = 0.1
         self.vel_y = 0.1
-        self.vel_start = vel_start
-        self.vel_curr = vel_start
+        self.vel_start = np.array(vel_start)
+        self.vel_curr = np.array(vel_start)
         self.pos_x = pos_start[0]
         self.pos_y = pos_start[1]
         self.acc_x = 0
@@ -28,6 +28,7 @@ class DynamicPoint:
         self.node_count = 0
         self.node_count_sling = 0
         self.at_node = True
+        self.total_time = 0
         # graphics related
         self.body = None
         self.body_radius = 10
@@ -64,6 +65,8 @@ class DynamicPoint:
         #    self.vel_x = v_fin * dir_unit_x
         #    self.vel_y = v_fin * dir_unit_y
 
+        self.total_time+=self.dt
+
     def move(self):
         self.vel_x = self.vel_x + self.acc_x * self.dt
         self.vel_y = self.vel_y + self.acc_y * self.dt
@@ -76,11 +79,13 @@ class DynamicPoint:
         self.path = path
         self.node_count = len(path)
 
-    def add_sling_path(self, path, vel_goal):
+    def add_sling_path(self, goal):
         # A path is a list of nodes
-        vel_series = get_velocity_series(path, self.vel_start, vel_goal)
-        acc_series = get_acceleration_series(path, self.acc_max)
-        self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(path, vel_series, acc_series)
+        vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
+        acc_series = get_acceleration_series(self.path, self.acc_max)
+        print(vel_series)
+        print(acc_series)
+        self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series)
         self.node_count_sling = len(self.sling_path)
     
     def set_graphicals(self):

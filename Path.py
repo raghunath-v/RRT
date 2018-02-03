@@ -136,12 +136,14 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
     for i in range(1,len(path)-1):
         vel_series.append(vel_max)
     vel_series.append(vel_goal)
+    return vel_series
 
 def get_acceleration_series(path, acc_max):
     acc_series = [acc_max]
     for i in range(1,len(path)-1):
         acc_series.append(acc_max)
     acc_series.append(acc_max)
+    return acc_series
 
 def find_acc(u, v, S):
     acceleration = (v ** 2 - u ** 2) / 2 * S

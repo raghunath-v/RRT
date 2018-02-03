@@ -1,10 +1,12 @@
 from graphics import Circle, Point, Line
 from g_tools import scale 
+import numpy as np
 
 class Goal:
     def __init__(self, vel, pos, win):
         self.vel_x = 0.2
         self.vel_y = 0.8
+        self.vel = np.array([self.vel_x, self.vel_y])
         self.pos_x = pos[0]
         self.pos_y = pos[1]
         self.win = win
