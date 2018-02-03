@@ -3,6 +3,8 @@ from collections import defaultdict
 from graphics import *
 import numpy as np
 import math as math
+from DubinCircle import *
+from Node import Node
 
 class Graph:
     """Simple graph class"""
@@ -127,53 +129,6 @@ class Graph:
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, dict(self._graph))
 
-
-class Node:
-    """A simple node class"""
-
-    def __init__(self, loc_x, loc_y):
-        self._x = loc_x
-        self._y = loc_y
-
-    def get_x(self):
-        """Returns the x coordinate of the node"""
-        return self._x
-
-    def get_y(self):
-        """Returns the y coordinate of the node"""
-        return self._y
-
-    def get_point(self):
-        return Point(self._x, self._y)
-
-    def get_close(self, node, delta_q):
-        """
-            Returns a new node that is on the line
-            between this node and the input node in
-            a delta_q distance from this node
-        """
-        # Dist is the distance between the two nodes
-        dist = self.dist_to(node)
-        new_x = self._x + (delta_q / dist) * (node.get_x() - self._x)
-        new_y = self._y + (delta_q / dist) * (node.get_y() - self._y)
-        return Node(new_x, new_y)
-
-    def dist_to(self, node):
-        """Returns the distance from this node to another"""
-        return np.sqrt((self._x - node.get_x()) ** 2 + (self._y - node.get_y()) ** 2)
-
-    def slope_to(self, node):
-        """Returns the slope from this node to another"""
-        return (node.get_y() - self._y) / (node.get_x() - self._x)
-
-    def __repr__(self):
-        return "( " + str(self._x) + ", " + str(self._y) + " )"
-
-
-def get_slope(p1, p2):
-    slope = (p2[1]-p1[1])/(p2[0]-p1[0]);
-    return slope
-
 def get_dist(p1, p2):
     distance = math.sqrt((p2[1]-p1[1])**2 + (p2[0]-p1[1])**2)
     return distance
@@ -182,6 +137,8 @@ def get_radius(v,acc):
     return math.sqrt(v[0]**2+v[1]**2)/acc
 
 def get_tangents(Circle1, Circle2):
+    """The function returns only one tangent for directional circles"""
+
     C1 = Circle1.get_centre()
     R1 = Circle1.get_radius()
     dir1 = Circle1.get_dir()
@@ -194,7 +151,7 @@ def get_tangents(Circle1, Circle2):
 
     tangents = []
 
-    if check_swap and (C1.get_x() > C2.get_x()):  #To get
+    if check_swap and (C1.x > C2.x):  #To get
         temp = R2
         R2 = R1
         R1 = temp
@@ -211,139 +168,116 @@ def get_tangents(Circle1, Circle2):
     alpha = math.acos((R1-R2)/d)
     beta = math.acos((R1+R2)/d)
     #Outer tangents only
-    T1_1 = Node(math.ceil(C1.get_x() + R1 * (math.cos(alpha + theta))),
-                math.ceil(C1.get_y() + R1 * (math.sin(alpha + theta))))
-    T1_2 = Node(math.ceil(C2.get_x() + R2 * (math.cos(math.pi - alpha + theta))),
-                math.ceil(C2.get_y() + R2 * (math.sin(math.pi - alpha + theta))))
-    T2_1 = Node(math.ceil(C1.get_x() + R1 * (math.cos(-alpha + theta))),
-                math.ceil(C1.get_y() + R1 * (math.sin(-alpha + theta))))
-    T2_2 = Node(math.ceil(C2.get_x() + R2 * (math.cos(-(math.pi - alpha) + theta))),
-                math.ceil(C2.get_y() + R2 * (math.sin(-(math.pi - alpha) + theta))))
+    T1_1 = Node(math.ceil(C1.x + R1 * (math.cos(alpha + theta))),
+                math.ceil(C1.y + R1 * (math.sin(alpha + theta))))
+    T1_2 = Node(math.ceil(C2.x + R2 * (math.cos(math.pi - alpha + theta))),
+                math.ceil(C2.y + R2 * (math.sin(math.pi - alpha + theta))))
+    T2_1 = Node(math.ceil(C1.x + R1 * (math.cos(-alpha + theta))),
+                math.ceil(C1.y + R1 * (math.sin(-alpha + theta))))
+    T2_2 = Node(math.ceil(C2.x + R2 * (math.cos(-(math.pi - alpha) + theta))),
+                math.ceil(C2.y + R2 * (math.sin(-(math.pi - alpha) + theta))))
     if check_swap and swapped:
-        if (dir1 == 'L' and dir2 == 'L'):
-            tangents.append((T1_1, T1_2))
-        if (dir1 == 'R' and dir2 == 'R'):
-            tangents.append((T2_1, T2_2))
-    else:
         if (dir1 == 'L' and dir2 == 'L'):
             tangents.append((T1_2, T1_1))
         if (dir1 == 'R' and dir2 == 'R'):
             tangents.append((T2_2, T2_1))
+    else:
+        if (dir1 == 'L' and dir2 == 'L'):
+            tangents.append((T1_1, T1_2))
+        if (dir1 == 'R' and dir2 == 'R'):
+            tangents.append((T2_1, T2_2))
 
     #Inner tangents
-    T1_1 = Node(math.ceil(C1.get_x() + R1 * (math.cos(beta + theta))),
-                math.ceil(C1.get_y() + R1 * (math.sin(beta + theta))))
-    T1_2 = Node(math.ceil(C2.get_x() + R2 * (math.cos(-(math.pi - beta) + theta))),
-                math.ceil(C2.get_y() + R2 * (math.sin(-(math.pi - beta) + theta))))
-    T2_1 = Node(math.ceil(C1.get_x() + R1 * (math.cos(-beta + theta))),
-                math.ceil(C1.get_y() + R1 * (math.sin(-beta + theta))))
-    T2_2 = Node(math.ceil(C2.get_x() + R2 * (math.cos(math.pi - beta + theta))),
-                math.ceil(C2.get_y() + R2 * (math.sin(math.pi - beta + theta))))
+    T1_1 = Node(math.ceil(C1.x + R1 * (math.cos(beta + theta))),
+                math.ceil(C1.y + R1 * (math.sin(beta + theta))))
+    T1_2 = Node(math.ceil(C2.x + R2 * (math.cos(-(math.pi - beta) + theta))),
+                math.ceil(C2.y + R2 * (math.sin(-(math.pi - beta) + theta))))
+    T2_1 = Node(math.ceil(C1.x + R1 * (math.cos(-beta + theta))),
+                math.ceil(C1.y + R1 * (math.sin(-beta + theta))))
+    T2_2 = Node(math.ceil(C2.x + R2 * (math.cos(math.pi - beta + theta))),
+                math.ceil(C2.y + R2 * (math.sin(math.pi - beta + theta))))
     if check_swap and swapped:
-        if (dir1 == 'L' and dir2 == 'R'):
-            tangents.append((T1_1, T1_2))
-        if (dir1 == 'R' and dir2 == 'L'):
-            tangents.append((T2_1, T2_2))
-    else:
         if (dir1 == 'L' and dir2 == 'R'):
             tangents.append((T1_2, T1_1))
         if (dir1 == 'R' and dir2 == 'L'):
             tangents.append((T2_2, T2_1))
+    else:
+        if (dir1 == 'L' and dir2 == 'R'):
+            tangents.append((T1_1, T1_2))
+        if (dir1 == 'R' and dir2 == 'L'):
+            tangents.append((T2_1, T2_2))
 
     return tangents
 
 
-def get_dubin_paths(P1, V1, P2, V2):
-    paths=['RSR', 'LSL', 'RSL', 'LSR']
+def get_dubin_path(P1, V1, A1, P2, V2, A2):
+    #paths=['RSR', 'LSL', 'RSL', 'LSR']
 
-    return paths
+    C1_1, C2_1 = getDubinCircles(P1, V1, A1)
+    C1_2, C2_2 = getDubinCircles(P2, V2, A2)
 
-class DubinCircle:
-    """A class for Dubins Circles"""
+    bestPath = []
+    bestDist = math.inf
+    for circle1 in [C1_1, C2_1]:
+        for circle2 in [C1_2, C2_2]:
+            tang = get_tangents(circle1, circle2)
+            pathLength = circle1.arclength(P1, tang[0][0])
+            pathLength += tang[0][0].dist_to(tang[0][1])
+            pathLength += circle2.arclength(P2, tang[0][1])
 
-    def __init__(self, centre, radius, direction):
-        self._c = centre
-        self._r = radius
-        self._dir = direction
+            if pathLength < bestDist:
+                bestDist = pathLength
+                bestPath = [[P1, circle1.dir], [tang[0][0], 0], [tang[0][1], circle2.dir]]
 
-    def get_centre(self):
-        """Returns the x coordinate of the node"""
-        return self._c
+    return bestPath
 
-    def get_radius(self):
-        """Returns the y coordinate of the node"""
-        return self._r
+def getDubinCircles(node, vel, acc):
+    slope = -vel[0] / vel[1]
+    radius = get_radius(vel, acc)
+    k = radius / math.sqrt(1 + slope ** 2)
 
-    def get_dir(self):
-        """Returns the y coordinate of the node"""
-        return self._dir
+    # First Circle
+    centre1 = Node(node.x + k, node.y + k * slope)
+    if vel[1] > 0:
+        direc = 'L'
+    else:
+        direc = 'R'
+    circle1 = DubinCircle(centre1, radius, direc)
 
-    def get_point(self):
-        return Point(self.get_centre().get_x(), self.get_centre().get_y())
+    # Second Circle
+    centre2 = Node(node.x - k, node.y - k * slope)
+    if vel[1] > 0:
+        direc = 'L'
+    else:
+        direc = 'R'
+    circle2 = DubinCircle(centre2, radius, direc)
+
+    return circle1, circle2
+
 
 
 
 if __name__=='__main__':
     goal = Node(400, 300)
     init = Node(150, 200)
-    v_in = np.array([30, 30])
-    v_fin = np.array([20, -20])
+    v_in = np.array([-30, 30])
+    v_fin = np.array([-20, -20])
     a_max = 0.5
-
-    orient = math.atan(v_in[1]/v_in[0])
 
     WIDTH = 600
     HEIGHT = 600
 
-    g = Graph(WIDTH, HEIGHT)
+    C1_init, C2_init = getDubinCircles(init, v_in, a_max)
+    C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
 
-    direction = ''
-    radius_init = get_radius(v_in, a_max)
-    radius_goal = get_radius(v_fin, a_max)
-    #print(radius_init)
+    dubin_path = get_dubin_path(init, v_in, a_max, goal, v_fin, a_max)
 
-    init_slope = -v_in[0]/v_in[1]
-    print(init_slope)
+    #print(C1_init.get_dir(), C1_goal.get_dir())
 
-    k_init = radius_init / math.sqrt(1 + init_slope**2)
-    # Left circle
-    C1_cen = Node(init.get_x() + k_init, init.get_y() + k_init * init_slope)
-    if v_in[1]>0:
-        direction = 'L'
-    else:
-        direction = 'R'
-    C1_init = DubinCircle(C1_cen, radius_init, direction)
-
-    # Right circle
-    C2_cen = Node(init.get_x() - k_init, init.get_y() - k_init * init_slope)
-    if v_in[1]>0:
-        direction = 'L'
-    else:
-        direction = 'R'
-    C2_init = DubinCircle(C2_cen, radius_init, direction)
-
-
-    goal_slope = -v_fin[0] / v_fin[1]
-    k_goal = radius_goal / math.sqrt(1 + goal_slope**2)
-    #Left circle
-    C1_cen = Node(goal.get_x() + k_goal, goal.get_y() + k_goal * goal_slope)
-    if v_fin[1]>0:
-        direction = 'L'
-    else:
-        direction = 'R'
-    C1_goal = DubinCircle(C1_cen, radius_goal, direction)
-
-    #Right circle
-    C2_cen = Node(goal.get_x() - k_goal, goal.get_y() - k_goal * goal_slope)
-    if goal_slope>0:
-        direction = 'R'
-    else:
-        direction = 'L'
-    C2_goal = DubinCircle(C2_cen, radius_goal, direction)
-
-    print(C1_init.get_dir(), C1_goal.get_dir())
     tangents = get_tangents(C1_init, C1_goal)
 
+
+    # Draw everything
 
     win = GraphWin("Graph", WIDTH, HEIGHT)
     g_init1 = Circle(init.get_point(), 5)
@@ -351,13 +285,13 @@ if __name__=='__main__':
     g_init1.setFill('Green')
     g_init1.draw(win)
 
-    g_init1 = Circle(C1_init.get_point(), radius_init)
-    g_init1.setOutline('Black')
+    g_init1 = Circle(C1_init.get_point(), C1_init.get_radius())
+    g_init1.setOutline('Green')
     #g_init1.setFill('Black')
     g_init1.draw(win)
 
-    g_init1 = Circle(C2_init.get_point(), radius_init)
-    g_init1.setOutline('Black')
+    g_init1 = Circle(C2_init.get_point(), C2_init.get_radius())
+    g_init1.setOutline('Green')
     #g_init1.setFill('Black')
     g_init1.draw(win)
 
@@ -366,12 +300,12 @@ if __name__=='__main__':
     g_goal.setFill('Red')
     g_goal.draw(win)
 
-    g_goal = Circle(C1_goal.get_point(), radius_goal)
+    g_goal = Circle(C1_goal.get_point(), C1_goal.get_radius())
     g_goal.setOutline('Black')
     #g_goal.setFill('Red')
     g_goal.draw(win)
 
-    g_goal = Circle(C2_goal.get_point(), radius_goal)
+    g_goal = Circle(C2_goal.get_point(), C2_goal.get_radius())
     g_goal.setOutline('Black')
     #g_goal.setFill('Red')
     g_goal.draw(win)
@@ -380,8 +314,8 @@ if __name__=='__main__':
     #draw tangents
     for tan in tangents:
         g_goal = Circle(tan[0].get_point(), 5)
-        g_goal.setOutline('Blue')
-        g_goal.setFill('Blue')
+        g_goal.setOutline('Green')
+        g_goal.setFill('Green')
         g_goal.draw(win)
 
         g_goal = Circle(tan[1].get_point(), 5)
@@ -390,19 +324,13 @@ if __name__=='__main__':
         g_goal.draw(win)
 
         Line(tan[0].get_point(),tan[1].get_point()).draw(win)
-    new = Point(init.get_x() + v_in[0], init.get_y() + v_in[1])
+
+    #Draw velocity vectors
+    new = Point(init.x + v_in[0], init.y + v_in[1])
     Line(init.get_point(), new).draw(win)
-    new = Point(goal.get_x() + v_fin[0], goal.get_y() + v_fin[1])
+    new = Point(goal.x + v_fin[0], goal.y + v_fin[1])
     Line(goal.get_point(), new).draw(win)
 
-    #print(T1.get_point())
-    #print(T2.get_point())
-
-    #Circle(T1.get_point(), 5).draw(win)
-    #Circle(T2.get_point(), 5).draw(win)
     win.getMouse()
     win.close()
 
-    #g.draw(init, goal, [])
-
-    #print(T1,T2)

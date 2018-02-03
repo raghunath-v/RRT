@@ -33,5 +33,9 @@ class Node:
         """Returns the distance from this node to another"""
         return np.sqrt((self.x - node.x)**2 + (self.y - node.y)**2)
 
+    def slope_to(self, node):
+        """Returns the slope from this node to another"""
+        return (node.y - self.y) / (node.x - self.x)
+
     def __repr__(self):
         return "( " + str(self.x) + ", " + str(self.y) + " )"
