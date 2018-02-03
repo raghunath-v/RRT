@@ -32,20 +32,26 @@ class RRT:
         self.goal_node = None
         self.path = None
         self.optimal_path = None
+        self.strategy = rrt_setup['strategy']
+        # Regarding RRT*
+        self.star_dist = 4
         # Other stuff
         self.verbose = verbose
 
     def generate(self):
         #q_init will be the starting location of the player
-        self.start_node = Node(self.player.pos_x, self.player.pos_y)
-        self.add_node(self.start_node)
         t = time.time()
-        self.simple_rrt()
+        if(self.strategy == 0):
+            self.simple_rrt()
+        elif(self.strategy == 1):
+            self.rrt_star()
         emit_verbose("Generating graph for RRT took", self.verbose, var=time.time()-t)
         self.find_path()
 
     def simple_rrt(self):
         """Builds an RRT"""
+        self.start_node = Node(self.player.pos_x, self.player.pos_y)
+        self.add_node(self.start_node)
         for _ in range(self.K):
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
@@ -55,12 +61,23 @@ class RRT:
         self.add_to_nearest(self.goal_node)
 
     def rrt_star(self):
+        self.start_node = Node(self.player.pos_x, self.player.pos_y)
+        self.start_node.set_goal_dist(0)
+        self.add_node(self.start_node)
         for _ in range(self.K):
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
-            q_near = self.find_nearest(q_rand)
-
+                q_nearest = self.find_nearest(q_rand)
+                q_new = q_nearest.get_close(q_rand, self.delta_q)
+                if(self.is_valid(q_new)):
+                    q_all_near = self.find_all_near(q_new)
+                    if( len(q_all_near) != 0):
+                        q_best_parent = self.select_best_parent(q_new, q_all_near)
+                        if self.is_segment_valid(q_new, q_best_parent):
+                            q_new.set_goal_dist(q_best_parent.goal_dist + q_new.dist_to(q_best_parent))
+                            q_new.set_parent(q_best_parent)
+                            self.add(q_new, q_best_parent)
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_to_nearest(self.goal_node)
 
@@ -159,13 +176,26 @@ class RRT:
             Finds all nodes that are within a circle
             of certain radius from node
         """
+        near_nodes = []
+        for graph_node in self.graph:
+            if target_node.dist_to(graph_node) < self.star_dist:
+                near_nodes.append(graph_node)
+        return near_nodes
 
-    def select_best_parent(self, near_nodes, target_node):
+
+    def select_best_parent(self, target_node, near_nodes):
         """
             From the nodes (list), select the node
             that, through itself, results in the least
             distance from the goal node to the target node
         """
+        best_dist = float('inf')
+        best_parent = None
+        for node in near_nodes:
+            if node.goal_dist + target_node.dist_to(node) < best_dist:
+                best_parent = node
+                best_dist = node.goal_dist + target_node.dist_to(node)
+        return best_parent
     
     def rewire(self, near_nodes, target_node):
         """
@@ -174,7 +204,6 @@ class RRT:
             the target node as parent instead of their current
             parent. If it is, set their parent to the target.
         """
-
     
     # currently used to add all other nodes in general
     def add_between_nearest(self, node):
@@ -219,6 +248,8 @@ class RRT:
         except KeyError:
             pass
 
+    # A random node (with bias) is generated,
+    # it is not neceserally a legal node
     def gen_random_node(self):
         if random.randint(0, 5) == 0:
             return Node(self.goal.pos_x, self.goal.pos_y)
@@ -256,7 +287,6 @@ class RRT:
             lin.setOutline('Red')
             lin.draw(self.win)
             self.drawable_path.append(lin)
-        print(self.optimal_path)
         for i in range(0,len(self.optimal_path)-1):
             node_1 = self.optimal_path[i]
             node_2 = self.optimal_path[i+1]
