@@ -1,10 +1,12 @@
 from graphics import Circle, Point, Line
 import numpy as np
-from g_tools import scale
+from g_tools import scale, scale_vectors
 from Path import *
 from Goal import Goal
 from math import sqrt, cos, sin, atan
 from Node import Node
+from DubinCircle import DubinCircle
+
 
 class DynamicPoint:
     def __init__(self, vel_start, pos_start, dt, vel_max, acc_max, win):
@@ -25,6 +27,7 @@ class DynamicPoint:
         self.finished = False
         self.path = None
         self.sling_path = None
+        self.sling_path_calculated = None
         self.sling_vel = None
         self.sling_acc = None
         self.node_count = 0
@@ -47,17 +50,14 @@ class DynamicPoint:
         self.T = 0
         self.n = 0
         self.beta = 0
-        self.c = None
-        self.radius = 0
+        self.circle = None
 
     def set_velocity(self, goal):
         # check if we have reached the next node
         if self.pos_x == self.sling_path[-1][0].x and self.pos_y == self.sling_path[-1][0].y or self.n == 0:
-            self.n = -1
-            print(self.pos_x, self.pos_y,  self.sling_path[-1][0].x,  self.sling_path[-1][0].y)
             # we have reached the next one, but is it
             # the goal node?
-            if(len(self.sling_path) == 1):
+            if (len(self.sling_path) == 1):
                 self.finished = True
                 return
             else:
@@ -68,48 +68,49 @@ class DynamicPoint:
                 self.new_action = True
 
         # are we going into a circle?
-        if(self.current_action[1] != 0):
+        if (self.current_action[1] != 0):
             if self.new_action:
                 self.set_circle_params()
-                self.T = self.arc_length/math.sqrt(self.current_vel[0]**2 + self.current_vel[1]**2)
-                self.n = math.floor(self.T/self.dt)
-                self.beta = self.theta/self.n
+                self.T = self.arc_length / math.sqrt(self.current_vel[0] ** 2 + self.current_vel[1] ** 2)
+                self.n = math.floor(self.T / self.dt)
+                self.beta = self.theta / self.n
                 self.new_action = False
             self.move_circular()
         else:
             # we are moving straight
             self.move()
 
-        self.total_time+=self.dt
+        self.total_time += self.dt
 
     def move_circular(self):
-        angle = atan(-self.vel_x/self.vel_y)
+        angle = atan(-self.vel_x / self.vel_y)
         self.acc_x = self.current_acc * cos(angle)
         self.acc_y = self.current_acc * sin(angle)
-        
-        self.vel_x = self.vel_x*cos(self.beta) - self.vel_y*sin(self.beta)
-        self.vel_y = self.vel_x*sin(self.beta) + self.vel_y*cos(self.beta)
-        
-        self.pos_x = (self.pos_x - self.c.x)*cos(self.beta) - (self.pos_y - self.c.y)*sin(self.beta) + self.c.x
-        self.pos_y = (self.pos_x - self.c.x)*sin(self.beta) + (self.pos_y - self.c.y)*cos(self.beta) + self.c.y
-        
-        print(self.pos_x, self.pos_y)
-        self.n-=1
+
+        self.vel_x = self.vel_x * cos(self.beta) - self.vel_y * sin(self.beta)
+        self.vel_y = self.vel_x * sin(self.beta) + self.vel_y * cos(self.beta)
+
+        self.pos_x = (self.pos_x - self.circle.c.x) * cos(self.beta) - (self.pos_y - self.circle.c.y) * sin(
+            self.beta) + self.circle.c.x
+        self.pos_y = (self.pos_x - self.circle.c.x) * sin(self.beta) + (self.pos_y - self.circle.c.y) * cos(
+            self.beta) + self.circle.c.y
+
+        self.n -= 1
         self.set_graphicals()
 
     def move(self):
-        angle = atan(self.vel_y/self.vel_x)
+        angle = atan(self.vel_y / self.vel_x)
         self.acc_x = self.current_acc * cos(angle)
         self.acc_y = self.current_acc * sin(angle)
 
         self.vel_x = self.vel_x + self.acc_x * self.dt
         self.vel_y = self.vel_y + self.acc_y * self.dt
-        
-        self.pos_x += self.dt*self.vel_x
-        self.pos_y += self.dt*self.vel_y
-        
+
+        self.pos_x += self.dt * self.vel_x
+        self.pos_y += self.dt * self.vel_y
+
         self.set_graphicals()
-    
+
     def add_path(self, path):
         # A path is a list of nodes
         self.path = path
@@ -120,6 +121,8 @@ class DynamicPoint:
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
         acc_series = get_acceleration_series(self.path, self.acc_max)
         self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series)
+        self.sling_path_calculated = self.sling_path
+        print("Path Generated : ", self.sling_path_calculated)
         self.node_count_sling = len(self.sling_path)
         self.sling_path = [el for el in reversed(self.sling_path)]
         self.sling_vel = [el for el in reversed(self.sling_vel)]
@@ -128,30 +131,33 @@ class DynamicPoint:
     def set_circle_params(self):
         p1, p2 = self.current_action[0], self.sling_path[-1][0]
         vel_1 = self.current_vel
-        dir_1 = self.current_action[0]
-        acc_1 = self.current_acc
+        dir_1 = self.current_action[1]
         slope = -vel_1[0] / vel_1[1]
-        radius = math.sqrt(vel_1[0]**2+vel_1[1]**2)/acc_1
+        radius = abs(1 / dir_1)
         k = radius / math.sqrt(1 + slope ** 2)
-        c = Node(p1.x + k, p1.y + k * slope)
-        v1 = np.array([p1.x - c.x, p1.y - c.y])
-        v2 = np.array([p2.x - c.x, p2.y - c.y])
-        theta = math.atan2(v2[1], v2[0]) - math.atan2(v1[1], v1[0])
-        if theta<0 and dir_1 == -1:
-            theta = theta + 2*math.pi
-        elif theta>0 and dir_1 == 1:
-            theta = theta - 2*math.pi
-        self.arc_length = abs(theta*radius)
+        centre = Node(p1.x + k, p1.y + k * slope)
+        circle = DubinCircle(centre, radius, dir_1)
+        theta = circle.arcangle(p1, p2)
+        self.arc_length = circle.arclength(p1, p2)
         self.theta = theta
-        self.c = c
-        self.radius = radius
+        self.circle = circle
 
     def set_graphicals(self):
-        if self.c is not None:
-            cir = Circle(self.c.get_scaled_point(), self.radius)
-            cir.draw(self.win)
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
+
+        # Draw the new path
+        if self.sling_path_calculated is not None:
+            for action in self.sling_path_calculated:
+                self.body = Circle(action[0].get_scaled_point(), self.body_radius)
+                self.body.setFill('yellow')
+                self.body.draw(self.win)
+
+        if self.circle is not None:
+            dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
+            dubinc.setOutline('Green')
+            dubinc.draw(self.win)
+
         if self.body:
             self.body.undraw()
         self.body = Circle(Point(draw_x, draw_y), self.body_radius)
@@ -161,7 +167,7 @@ class DynamicPoint:
             self.vel_arrow.undraw()
         self.vel_arrow = Line(
             Point(draw_x, draw_y),
-            Point(scale(self.pos_x +self.vel_x), scale(self.pos_y + self.vel_y)))
+            Point(scale(self.pos_x + self.vel_x * 5), scale(self.pos_y + self.vel_y * 5)))
         self.vel_arrow.setFill('black')
         self.vel_arrow.setArrow("last")
         self.vel_arrow.draw(self.win)
@@ -169,7 +175,7 @@ class DynamicPoint:
             self.acc_arrow.undraw()
         self.acc_arrow = Line(
             Point(draw_x, draw_y),
-            Point(scale(self.pos_x +self.acc_x), scale(self.pos_y + self.acc_y)))
+            Point(scale(self.pos_x + self.acc_x * 5), scale(self.pos_y + self.acc_y * 5)))
         self.acc_arrow.setFill('blue')
         self.acc_arrow.setArrow('last')
         self.acc_arrow.draw(self.win)
@@ -182,4 +188,4 @@ class DynamicPoint:
                 node.setFill('red')
                 node.draw(self.win)
         '''
-        
+
