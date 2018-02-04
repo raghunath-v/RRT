@@ -57,6 +57,7 @@ class Environment:
         print("goal: ", self.goal.vel_x,",",self.goal.vel_y)
         print("player: ", self.player.vel_x,",",self.player.vel_y)
         print("Time taken to reach goal (sec): ", player.total_time)
+        self.win.getMouse()
         self.win.close()
         return player.total_time
     
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     elif mdl_name == "dynamic_point":
         player = DynamicPoint(vel_start, pos_start, dt, v_max, a_max, win)
     elif mdl_name == "differential_drive":
-        player = DifferentialDrive(vel_start, pos_start, v_max, 0.00001, dt, win)
+        player = DifferentialDrive(vel_start, pos_start, v_max, omega_max, dt, win)
     elif mdl_name == "kinematic_car":
         player = KinematicCar(vel_start, pos_start, v_max, vehicle_length, phi_max, dt, win)
     else:

@@ -1,7 +1,7 @@
 from graphics import * 
 import g_tools as g
 from Goal import Goal
-from math import atan, acos, sin, cos, sqrt
+from math import atan, acos, sin, cos, sqrt, radians
 
 class DifferentialDrive:
     def __init__(self, vel_start, pos_start, vel_max, turn_max, dt, win):
@@ -16,10 +16,8 @@ class DifferentialDrive:
         
         # Specific to differential drive
         self.turn_max = turn_max
-        self.turn_max = 0.1
         self.beta = 1
         self.alpha = -1
-
         # path planning related
         self.path = None
         self.node_count = 0
@@ -40,69 +38,76 @@ class DifferentialDrive:
         self.body_radius = 10
         self.win = win
 
+        self.in_rotation = False
+        self.in_motion = False
+        self.in_final_rotation = False
+        self.goal_vel_x = 0
+        self.goal_vel_y = 0
     def set_velocity(self, goal):
-        if not self.is_moving:
-            if not self.in_rotation:
-                if self.alpha == self.beta and not self.at_new_node:
-                    self.is_moving = True
-                    self.vel_x = self.vel_max * cos(self.beta)
-                    self.vel_y = self.vel_max * sin(self.beta)
-                    self.move()
-                else:
-                    self.path_idx+=1
-                    if self.path_idx >= self.node_count:
-                        self.vel_x = 0
-                        self.vel_y = 0
-                        if not self.finished:
-                            self.alpha = atan(goal.vel_y/goal.vel_x)
-                            self.in_rotation = True
-                            if abs(self.alpha-self.beta) <= self.turn_max:
-                                self.move(angle=self.alpha)
-                                self.finished = True
-                            else:
-                                self.move()
-                    else:
-                        self.next_node = self.path[self.path_idx]
-                        self.beta = atan(self.vel_y/self.vel_x) # degs from pos x
-                        wanted_x = self.next_node.x - self.pos_x
-                        wanted_y = self.next_node.y - self.pos_y
-                        self.alpha = acos(wanted_x/sqrt(wanted_x**2+wanted_y**2))
-                        self.vel_x = 0
-                        self.vel_y = 0
-                        self.in_rotation = True
-                        self.at_new_node = False
-                        self.move()
-            else:
-                if abs(self.alpha-self.beta) <= self.turn_max*self.dt:
-                    self.move(angle=self.alpha)
-                else:
-                    self.move()
+        if self.in_final_rotation:
+            self.final_rotate()
+        elif self.in_rotation:
+            self.rotate()
+        elif self.in_motion:
+            self.move()
         else:
-            dist = sqrt((self.pos_x - self.next_node.x)**2 + (self.pos_y - self.next_node.y)**2)
-            if(dist<=self.dist_max):
-                v_fin = dist / self.dist_max
-                self.move(vel=[v_fin * cos(self.beta), v_fin * sin(self.beta)])
-            else:
-                self.move()
-
-    def move(self, angle=None, vel=None):
-        if self.in_rotation:
-            if angle is not None:
-                self.beta = angle
-                self.in_rotation = False 
-            else:
-                if self.alpha > self.beta:
-                    self.beta+=self.turn_max*self.dt
+            if self.path_idx == self.node_count - 1:
+                self.goal_vel_x = goal.vel_x
+                self.goal_vel_y = goal.vel_y
+                self.alpha = atan(self.goal_vel_y/self.goal_vel_x)
+                self.in_final_rotation = True
+                self.final_rotate()
+            else: 
+                # we are at a node, maybe the first one
+                self.path_idx+=1
+                self.next_node = self.path[self.path_idx]
+                # calculate the degree needed to move
+                self.beta = atan(self.vel_y/self.vel_x) # degs from pos x
+                wanted_x = self.next_node.x - self.pos_x
+                wanted_y = self.next_node.y - self.pos_y
+                self.alpha = atan((self.next_node.y - self.pos_y)/(self.next_node.x - self.pos_x))
+                if self.alpha != self.beta:
+                    self.in_rotation = True
+                    self.vel_x = 0
+                    self.vel_y = 0
+                    self.rotate()
                 else:
-                    self.beta-=self.turn_max*self.dt
-        if self.is_moving:
-            if vel is not None:
-                self.vel_x, self.vel_y = vel[0], vel[1]
-                self.is_moving = False
-                self.at_new_node = True
-            self.pos_x += self.dt*self.vel_x
-            self.pos_y += self.dt*self.vel_y
+                    self.in_motion = True
+                    self.move()
         self.set_graphicals()
+    
+    def final_rotate(self):
+        if abs(self.alpha-self.beta) <= self.turn_max*self.dt:
+            self.beta = self.alpha
+            self.vel_x = self.goal_vel_x
+            self.vel_y = self.goal_vel_y
+            self.finished = True
+        elif self.alpha > self.beta:
+            self.beta+=self.turn_max*self.dt
+        else:
+            self.beta-=self.turn_max*self.dt
+    
+    def rotate(self):
+        if abs(self.alpha-self.beta) <= self.turn_max*self.dt:
+            self.beta = self.alpha
+            self.in_rotation = False
+            self.in_motion = True
+        elif self.alpha > self.beta:
+            self.beta+=self.turn_max*self.dt
+        else:
+            self.beta-=self.turn_max*self.dt
+    
+    def move(self):
+        dist = sqrt((self.pos_x - self.next_node.x)**2 + (self.pos_y - self.next_node.y)**2)
+        if(dist<=self.dist_max):
+            v_fin = dist / self.dist_max
+            self.vel_x, self.vel_y = v_fin * cos(self.beta), v_fin * sin(self.beta)
+            self.pos_x, self.pos_y = self.next_node.x, self.next_node.y
+            self.in_motion = False
+            self.in_rotation = False
+        else:
+            self.pos_x += self.dt*self.vel_max*cos(self.beta)
+            self.pos_y += self.dt*self.vel_max*sin(self.beta)
 
     def add_path(self, path):
         # Path is a list of Nodes
