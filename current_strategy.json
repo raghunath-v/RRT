@@ -1,0 +1,7 @@
+{
+	"env_name": "P1",
+	"mdl_name": "kinematic_point",
+	"delta_q": 1,
+	"k": 500,
+	"rrt_strategy": 0
+}

@@ -1,4 +1,5 @@
 import json
+import sys
 from graphics import GraphWin
 from Obstacle import Obstacle
 from BoundingArea import BoundingArea
@@ -8,6 +9,7 @@ from DifferentialDrive import DifferentialDrive
 from KinematicCar import KinematicCar
 from Goal import Goal
 from RRT import RRT
+
 
 class Environment: 
     '''
@@ -54,9 +56,9 @@ class Environment:
         print("Velocity:")
         print("goal: ", self.goal.vel_x,",",self.goal.vel_y)
         print("player: ", self.player.vel_x,",",self.player.vel_y)
-        print("Time taken to reach goal (dt): ", player.total_time)
-        self.win.getMouse()
+        print("Time taken to reach goal (sec): ", player.total_time)
         self.win.close()
+        return player.total_time
     
     def init_draw(self):
          # draw everything initially
@@ -67,8 +69,21 @@ class Environment:
         self.goal.set_graphicals()
 
 if __name__ == "__main__":
-    #run stuff here
-    with open("environments/P1.json") as json_file:
+
+    with open("best_strategies.json") as json_file:
+        best_strategies = json.load(json_file)
+    
+    with open("current_strategy.json") as json_file:
+        curr_strat = json.load(json_file)
+
+    env_name = curr_strat['env_name']
+    mdl_name = curr_strat['mdl_name']
+    delta_q = curr_strat['delta_q']
+    k = curr_strat['k']
+    rrt_strat = curr_strat['rrt_strategy']
+
+
+    with open("environments/"+str(env_name)+".json") as json_file:
         desc = json.load(json_file)
     
     bounding_poly = desc['bounding_polygon']
@@ -83,15 +98,46 @@ if __name__ == "__main__":
     omega_max = desc['vehicle_omega_max']
     phi_max = desc['vehicle_phi_max']
     vehicle_length = desc['vehicle_L']
+    
     canvas_width = 800
     canvas_height = 800
     win = GraphWin("area", canvas_width, canvas_height)
-    #player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
-    player = DynamicPoint(vel_start, pos_start, dt, v_max, a_max, win)
-    #player = DifferentialDrive(vel_start, pos_start, v_max, 0.00001, dt, win)
-    #player = KinematicCar(vel_start, pos_start, v_max, vehicle_length, phi_max, dt, win)
+
+    if mdl_name == 'kinematic_point':
+        player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
+    elif mdl_name == "dynamic_point":
+        player = DynamicPoint(vel_start, pos_start, dt, v_max, a_max, win)
+    elif mdl_name == "differential_drive":
+        player = DifferentialDrive(vel_start, pos_start, v_max, 0.00001, dt, win)
+    elif mdl_name == "kinematic_car":
+        player = KinematicCar(vel_start, pos_start, v_max, vehicle_length, phi_max, dt, win)
+    else:
+        print('Invalid model name, exiting')
+        sys.exit(0)
+    
     goal = Goal(vel_goal, pos_goal, win)
     env = Environment(obstacles, bounding_poly, player, goal, win)
-    delta_q = v_max
-    rrt_setup = {'delta_q': 1, 'k':500, 'x_range': [-2,60], 'y_range': [-2,60], 'strategy':1 }
-    env.run(rrt_setup)
+    rrt_setup = {'delta_q': delta_q, 'k': k, 'strategy':rrt_strat, 'x_range': [-2,60], 'y_range': [-2,60]}
+    new_time = env.run(rrt_setup)
+    old_time = best_strategies[env_name][mdl_name]['best_time']
+    resave = False
+    if(old_time == -1):
+        print("This time will be set as the new best time (no other recorded time")
+        resave = True
+    elif(new_time > old_time):
+        print('This time was worse than the current best: ', old_time)
+    elif(new_time < old_time):
+        print('This time was better than the current best: ', old_time)
+        print('Difference is: ', old_time - new_time)
+        print('This time will be set as the new best time')
+        resave = True
+    if(resave):
+        best_strategies[env_name][mdl_name] = {
+            "best_time": new_time,
+            "delta_q": delta_q,
+            "k": k,
+            "rrt_strategy": rrt_strat
+        }
+        with open('best_strategies.json', 'w') as json_file:
+            json.dump(best_strategies, json_file)
+

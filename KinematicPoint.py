@@ -49,7 +49,6 @@ class KinematicPoint:
             self.at_node = False
     
         dist = np.sqrt((self.pos_x - self.next_node.x)**2 + (self.pos_y - self.next_node.y)**2)
-
         # hit next node exactly in next time step if we can
         if dist < self.dist_max:
             v_fin = dist / self.dt
@@ -61,6 +60,7 @@ class KinematicPoint:
             self.vel_x = v_fin * dir_unit_x
             self.vel_y = v_fin * dir_unit_y
             self.at_node = True
+            #self.finished = True
         
         self.total_time+=self.dt
         self.move()
