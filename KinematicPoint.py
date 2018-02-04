@@ -63,6 +63,7 @@ class KinematicPoint:
             self.at_node = True
         
         self.total_time+=self.dt
+        self.move()
 
     def set_auto_velocity(self, goal):
         # goal is of type Goal
