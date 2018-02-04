@@ -45,6 +45,7 @@ class Environment:
         while not self.player.finished:
             #self.player.set_auto_velocity(self.goal)
             self.player.set_velocity(self.goal)
+        self.player.set_graphicals()
         print("Is finshed")
         print("Position:")
         print("goal: ", self.goal.pos_x,",",self.goal.pos_y)
@@ -66,7 +67,7 @@ class Environment:
 
 if __name__ == "__main__":
     #run stuff here
-    with open("P1.json") as json_file:
+    with open("environments/P3.json") as json_file:
         desc = json.load(json_file)
     
     bounding_poly = desc['bounding_polygon']
@@ -82,11 +83,11 @@ if __name__ == "__main__":
     canvas_width = 800
     canvas_height = 800
     win = GraphWin("area", canvas_width, canvas_height)
-    #player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
+    player = KinematicPoint(vel_start, pos_start, dt, v_max, win)
     #player = DynamicPoint(vel_start, pos_start, dt, v_max, a_max, win)
-    player = DifferentialDrive(vel_start, pos_start, v_max, 0.00001, dt, win)
+    #player = DifferentialDrive(vel_start, pos_start, v_max, 0.00001, dt, win)
     goal = Goal(vel_goal, pos_goal, win)
     env = Environment(obstacles, bounding_poly, player, goal, win)
     delta_q = v_max
-    rrt_setup = {'delta_q': 2, 'k':500, 'x_range': [-2,60], 'y_range': [-2,60], 'strategy': 0}
+    rrt_setup = {'delta_q': 1, 'k':500, 'x_range': [-2,60], 'y_range': [-2,60], 'strategy':1 }
     env.run(rrt_setup)

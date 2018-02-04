@@ -33,6 +33,8 @@ class RRT:
         self.path = None
         self.optimal_path = None
         self.strategy = rrt_setup['strategy']
+        self.closest_to_goal = None
+        self.closest_dist_to_goal = sys.float_info.max
         # Regarding RRT*
         self.star_dist = 2
         # Other stuff
@@ -52,36 +54,45 @@ class RRT:
         """Builds an RRT"""
         self.start_node = Node(self.player.pos_x, self.player.pos_y)
         self.add_node(self.start_node)
-        for _ in range(self.K):
+        self.closest_to_goal = self.start_node
+        self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
+        k=0
+        while not self.is_path_to_goal() or k < self.K:
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
             self.add_between_nearest(q_rand)
-        self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
+            k+=1
         self.add_to_nearest(self.goal_node)
 
     def rrt_star(self):
         self.start_node = Node(self.player.pos_x, self.player.pos_y)
-        self.start_node.set_goal_dist(0)
+        self.start_node.set_start_dist(0)
+        self.closest_to_goal = self.start_node
+        self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_node(self.start_node)
-        for _ in range(self.K):
+        k = 0
+        while not self.is_path_to_goal() or k < self.K:
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
                 q_nearest = self.find_nearest(q_rand)
                 q_new = q_nearest.get_close(q_rand, self.delta_q)
+                k+=1
                 if(self.is_valid(q_new)):
                     q_all_near = self.find_all_near(q_new)
                     if( len(q_all_near) != 0):
                         q_best_parent = self.select_best_parent(q_new, q_all_near)
                         if self.is_segment_valid(q_new, q_best_parent):
-                            q_new.set_goal_dist(q_best_parent.goal_dist + q_new.dist_to(q_best_parent))
+                            q_new.set_start_dist(q_best_parent.goal_dist + q_new.dist_to(q_best_parent))
                             q_new.set_parent(q_best_parent)
                             for q in q_all_near:
                                 self.rewire(q, q_new)
                             self.add(q_new, q_best_parent)
-        self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_to_nearest(self.goal_node)
+
+    def is_path_to_goal(self):
+        return self.is_segment_valid(self.closest_to_goal, self.goal_node)
 
     def find_path(self):
         current_node = self.goal_node
@@ -138,10 +149,13 @@ class RRT:
         for node_1, node_2 in edges:
             self.add(node_1, node_2)
 
-    def add(self, node_1, node_2):
+    def add(self, new_node, parent):
         """"Add an edge between node_1 and node_2"""
-        self.graph[node_1].add(node_2)
-        self.graph[node_2].add(node_1)
+        if(new_node.dist_to(self.goal_node) < self.closest_dist_to_goal):
+                self.closest_to_goal = new_node
+                self.closest_dist_to_goal = new_node.dist_to(self.goal_node) 
+        self.graph[new_node].add(parent)
+        self.graph[parent].add(new_node)
 
     # currently only used for adding the inital node
     def add_node(self, node):
@@ -155,10 +169,15 @@ class RRT:
         nearest = None
         for graph_node in self.graph:
             if node.dist_to(graph_node) < min_dist:
-                nearest = graph_node
-                min_dist = node.dist_to(nearest)
-        node.set_parent(nearest)
-        self.add(nearest, node)
+                if self.is_segment_valid(graph_node, node):
+                    nearest = graph_node
+                    min_dist = node.dist_to(nearest)
+        if nearest is None:
+            return False
+        else:
+            node.set_parent(nearest)
+            self.add(nearest, node)
+            return True
 
     def find_nearest(self, target_node):
         """
@@ -209,7 +228,7 @@ class RRT:
         if target_node.goal_dist + near_node.dist_to(target_node) < near_node.goal_dist:
             # Do rewiring
             self.remove_as_child(near_node)
-            near_node.set_goal_dist(target_node.goal_dist + near_node.dist_to(target_node))
+            near_node.set_start_dist(target_node.goal_dist + near_node.dist_to(target_node))
             near_node.set_parent(target_node)
             self.add(target_node, near_node)
     
@@ -230,6 +249,9 @@ class RRT:
         new_node = closest.get_close(node, self.delta_q)
         if self.is_valid(new_node):
             new_node.set_parent(closest)
+            if(new_node.dist_to(self.goal_node) < self.closest_dist_to_goal):
+                self.closest_to_goal = new_node
+                self.closest_dist_to_goal = new_node.dist_to(self.goal_node) 
             self.add(closest, new_node)
     
     def is_valid(self, new):
@@ -272,7 +294,7 @@ class RRT:
         else:
             return Node(random.uniform(self.min_x, self.max_x), random.uniform(self.min_x, self.max_x))
 
-    def set_graphicals(self, draw_nodes=True, draw_edges=False):
+    def set_graphicals(self, draw_nodes=True, draw_edges=True):
         """Draws the graph"""
         self.drawables = []
         self.drawable_path = []
