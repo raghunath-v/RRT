@@ -1,6 +1,6 @@
 from graphics import Point
 import numpy as np
-from g_tools import scale
+from g_tools import scale_coordinate
 
 class Node:
     """A simple node class"""
@@ -20,7 +20,7 @@ class Node:
         return Point(self.x, self.y)
 
     def get_scaled_point(self):
-        return Point(scale(self.x), scale(self.y))
+        return Point(scale_coordinate(self.x), scale_coordinate(self.y))
 
     def get_close(self, node, delta_q):
         """
