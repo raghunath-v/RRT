@@ -6,6 +6,7 @@ import math as math
 from DubinCircle import *
 from Node import Node
 
+INCREASE_RADIUS = 6
 
 def get_dist(p1, p2):
     distance = math.sqrt((p2[1]-p1[1])**2 + (p2[0]-p1[1])**2)
@@ -57,14 +58,14 @@ def get_tangents(Circle1, Circle2):
                 math.ceil(C2.y + R2 * (math.sin(-(math.pi - alpha) + theta))))
 
     if check_swap and swapped:
-        if (dir1 == -1 and dir2 == -1):
+        if (dir1 < 0 and dir2 < 0):
             tangents.append((T1_2, T1_1))
-        if (dir1 == 1 and dir2 == 1):
+        if (dir1 > 0 and dir2 > 0):
             tangents.append((T2_2, T2_1))
     else:
-        if (dir1 == -1 and dir2 == -1):
+        if (dir1 < 0 and dir2 < 0):
             tangents.append((T1_1, T1_2))
-        if (dir1 == 1 and dir2 == 1):
+        if (dir1 > 0 and dir2 > 0):
             tangents.append((T2_1, T2_2))
 
     #Inner tangents
@@ -78,14 +79,14 @@ def get_tangents(Circle1, Circle2):
                 math.ceil(C2.y + R2 * (math.sin(math.pi - beta + theta))))
 
     if check_swap and swapped:
-        if (dir1 == -1 and dir2 == 1):
+        if (dir1 < 0 and dir2 > 0):
             tangents.append((T1_2, T1_1))
-        if (dir1 == 1 and dir2 == -1):
+        if (dir1 > 0 and dir2 < 0):
             tangents.append((T2_2, T2_1))
     else:
-        if (dir1 == -1 and dir2 == 1):
+        if (dir1 < 0 and dir2 > 0):
             tangents.append((T1_1, T1_2))
-        if (dir1 == 1 and dir2 == -1):
+        if (dir1 > 0 and dir2 < 0):
             tangents.append((T2_1, T2_2))
 
     return tangents
@@ -120,17 +121,17 @@ def getDubinCircles(node, vel, acc):
     # First Circle
     centre1 = Node(node.x + k, node.y + k * slope)
     if vel[1] > 0:
-        direc = -1
+        direc = -1/radius
     else:
-        direc = 1
+        direc = 1/radius
     circle1 = DubinCircle(centre1, radius, direc)
 
     # Second Circle
     centre2 = Node(node.x - k, node.y - k * slope)
     if vel[1] > 0:
-        direc = -1
+        direc = -1/radius
     else:
-        direc = 1
+        direc = 1/radius
     circle2 = DubinCircle(centre2, radius, direc)
 
     return circle1, circle2
