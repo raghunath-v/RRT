@@ -3,15 +3,23 @@ import numpy as np
 import sys
 import math
 
+SCALE_FACTOR = 14
+
 def gen_point_list(points):
     # points: [[x_1, y_1],...,[x_N, y_N]]
     # have to make sure each 
     return [Point(x,y) for x,y in points]
 
 def scale(x):
-    scale_factor = 14
     offset = 100
-    return scale_factor*x + offset
+    return SCALE_FACTOR*x + offset
+
+def scale_coordinate(x):
+    offset = 100
+    return SCALE_FACTOR*x + offset
+
+def scale_vectors(x):
+    return SCALE_FACTOR*x
 
 def scale_points(points):
     # points: [[x_1, y_1],...,[x_N, y_N]]

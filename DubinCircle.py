@@ -1,6 +1,7 @@
 from graphics import Point
 import numpy as np
-from math import atan2, pi
+from math import atan2, pi, atan
+from g_tools import scale_coordinate, scale_points, scale_vectors
 
 class DubinCircle:
     """A class for Dubins Circles"""
@@ -25,6 +26,9 @@ class DubinCircle:
     def get_point(self):
         return Point(self.get_centre().x, self.get_centre().y)
 
+    def get_scaled_centre(self):
+        return Point(scale_coordinate(self.c.x), scale_coordinate(self.c.y))
+
     def arclength(self, p1, p2):
         v1 = np.array([p1.x - self.c.x,
                        p1.y - self.c.y])
@@ -37,4 +41,13 @@ class DubinCircle:
         elif theta>0 and self.dir > 0:
             theta = theta - 2*pi
 
-        return abs(theta*self.r)    
+        return abs(theta*self.r)
+
+    def arcangle(self, p1, p2):
+        v1 = np.array([p1.x - self.c.x,
+                       p1.y - self.c.y])
+        v2 = np.array([p2.x - self.c.x,
+                       p2.y - self.c.y])
+        theta = atan(v2[1]/ v2[0]) - atan(v1[1]/ v1[0])
+
+        return theta

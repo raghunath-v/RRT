@@ -40,10 +40,10 @@ def get_tangents(Circle1, Circle2):
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
 
-    print(R1, R2)
-    if(R1 + R2 > d):
-        print(R1, R2)
-        print(d)
+    #print(R1, R2)
+    #if(R1 + R2 > d):
+    #   print(R1, R2)
+    #   print(d)
     alpha = math.acos((R1-R2)/d)
     beta = math.acos((R1+R2)/d)
 
@@ -140,8 +140,6 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
     vel_series = [vel_start]
     for i in range(1, len(path)-1):
         theta = math.atan(path[i].slope_to(path[i+1]))
-        #TODO: We slow down ALOT when we are going through a circle
-        # find a way to NOT do that. SMALL RADIUS
         vel_x = vel_max * math.cos(theta)
         vel_y = vel_max * math.sin(theta)
         vel_series.append(np.array([vel_x, vel_y]))
@@ -149,10 +147,13 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
     return vel_series
 
 def get_acceleration_series(path, acc_max):
-    acc_series = [acc_max]
+    # TODO: We reduce acceleration ALOT when we are going through a circle
+    # find a way to NOT do that. SMALL RADIUS
+    scaleAcc = 0.2
+    acc_series = [acc_max*scaleAcc]
     for i in range(1, len(path)-1):
-        acc_series.append(acc_max)
-    acc_series.append(acc_max)
+        acc_series.append(acc_max*scaleAcc)
+    acc_series.append(acc_max*scaleAcc)
     return acc_series
 
 def find_acc(u, v, S):
@@ -195,7 +196,7 @@ def create_sling_path(path, vel_series, acc_series):
     return new_path, new_vel_series, new_acc_series
 
 
-if __name__=='__main__': #Test for dynamic
+if __name__=='__test__': #Test for dynamic
     goal = Node(400, 300)
     init = Node(150, 200)
     v_in = np.array([-30, 30])
@@ -209,24 +210,19 @@ if __name__=='__main__': #Test for dynamic
     C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
 
     dubin_path = getBestDubinPath(init, v_in, a_max, goal, v_fin, a_max)
-
-
-
     tangents = get_tangents(C1_init, C1_goal)
 
 
-
-
-
-if __name__=='__test__':
+if __name__=='__main__':
     goal = Node(400, 300)
     init = Node(150, 200)
     v_in = np.array([-30, 30])
     v_fin = np.array([-20, -20])
     a_max = 0.5
 
-    WIDTH = 600
-    HEIGHT = 600
+    canvas_width = 800
+    canvas_height = 800
+    win = GraphWin("area", canvas_width, canvas_height)
 
     C1_init, C2_init = getDubinCircles(init, v_in, a_max)
     C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
@@ -240,51 +236,50 @@ if __name__=='__test__':
 
     # Draw everything
 
-    win = GraphWin("Graph", WIDTH, HEIGHT)
-    g_init1 = Circle(init.get_point(), 5)
-    g_init1.setOutline('Green')
-    g_init1.setFill('Green')
-    g_init1.draw(win)
+    g = Circle(init.get_scaled_point(), 5)
+    g.setOutline('Green')
+    g.setFill('Green')
+    g.draw(win)
 
-    g_init1 = Circle(C1_init.get_point(), C1_init.get_radius())
-    g_init1.setOutline('Green')
-    #g_init1.setFill('Black')
-    g_init1.draw(win)
+    g = Circle(C1_init.get_scaled_centre(), C1_init.r)
+    g.setOutline('Green')
+    #g.setFill('Black')
+    g.draw(win)
 
-    g_init1 = Circle(C2_init.get_point(), C2_init.get_radius())
-    g_init1.setOutline('Green')
-    #g_init1.setFill('Black')
-    g_init1.draw(win)
+    g = Circle(C2_init.get_scaled_centre(), C2_init.r)
+    g.setOutline('Green')
+    #g.setFill('Black')
+    g.draw(win)
 
-    g_goal = Circle(goal.get_point(), 5)
-    g_goal.setOutline('Red')
-    g_goal.setFill('Red')
-    g_goal.draw(win)
+    g = Circle(goal.get_scaled_point(), 5)
+    g.setOutline('Red')
+    g.setFill('Red')
+    g.draw(win)
 
-    g_goal = Circle(C1_goal.get_point(), C1_goal.get_radius())
-    g_goal.setOutline('Black')
-    #g_goal.setFill('Red')
-    g_goal.draw(win)
+    g = Circle(C1_goal.get_scaled_centre(), C1_goal.r)
+    g.setOutline('Black')
+    #g.setFill('Red')
+    g.draw(win)
 
-    g_goal = Circle(C2_goal.get_point(), C2_goal.get_radius())
-    g_goal.setOutline('Black')
-    #g_goal.setFill('Red')
-    g_goal.draw(win)
+    g = Circle(C2_goal.get_scaled_centre(), C2_goal.r)
+    g.setOutline('Black')
+    #g.setFill('Red')
+    g.draw(win)
 
 
     #draw tangents
     for tan in tangents:
-        g_goal = Circle(tan[0].get_point(), 5)
-        g_goal.setOutline('Green')
-        g_goal.setFill('Green')
-        g_goal.draw(win)
+        g = Circle(tan[0].get_scaled_point(), 5)
+        g.setOutline('Green')
+        g.setFill('Green')
+        g.draw(win)
 
-        g_goal = Circle(tan[1].get_point(), 5)
-        g_goal.setOutline('Blue')
-        g_goal.setFill('Blue')
-        g_goal.draw(win)
+        g = Circle(tan[1].get_scaled_point(), 5)
+        g.setOutline('Blue')
+        g.setFill('Blue')
+        g.draw(win)
 
-        Line(tan[0].get_point(),tan[1].get_point()).draw(win)
+        Line(tan[0].get_point(),tan[1].get_scaled_point()).draw(win)
 
     #Draw velocity vectors
     new = Point(init.x + v_in[0], init.y + v_in[1])
