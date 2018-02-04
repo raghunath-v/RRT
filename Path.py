@@ -140,9 +140,9 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
     for i in range(1, len(path)-1):
         theta = math.atan(path[i].slope_to(path[i+1]))
         #TODO: We slow down ALOT when we are going through a circle
-        # find a way to NOT do that.
-        vel_x = vel_max * math.cos(theta) / 10
-        vel_y = vel_max * math.sin(theta) / 10
+        # find a way to NOT do that. SMALL RADIUS
+        vel_x = vel_max * math.cos(theta)
+        vel_y = vel_max * math.sin(theta)
         vel_series.append(np.array([vel_x, vel_y]))
     vel_series.append(vel_goal)
     return vel_series

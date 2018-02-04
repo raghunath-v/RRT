@@ -73,7 +73,7 @@ class KinematicPoint:
             self.vel_y = goal.vel_y
             self.finished = True
             return
-        
+
         # Aim at goal
         dir_x = goal.pos_x - self.pos_x
         dir_y = goal.pos_y - self.pos_y

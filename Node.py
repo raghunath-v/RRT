@@ -1,6 +1,7 @@
 from graphics import Point
 import numpy as np
 from g_tools import scale
+
 class Node:
     """A simple node class"""
     def __init__(self, loc_x, loc_y):

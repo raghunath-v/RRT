@@ -1,6 +1,7 @@
 from graphics import *
 import numpy as np
 import sys
+import math
 
 def gen_point_list(points):
     # points: [[x_1, y_1],...,[x_N, y_N]]

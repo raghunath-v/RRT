@@ -42,7 +42,9 @@ class Environment:
         while not self.player.finished:
             #self.player.set_auto_velocity(self.goal)
             self.player.set_velocity(self.goal)
-            self.player.move()
+            #TODO: player.move needs to be called currently
+            # for the kinematic model
+            #self.player.move()
         print("Is finshed")
         print("Position:")
         print("goal: ", self.goal.pos_x,",",self.goal.pos_y)
