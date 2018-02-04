@@ -57,7 +57,7 @@ class Environment:
         print("goal: ", self.goal.vel_x,",",self.goal.vel_y)
         print("player: ", self.player.vel_x,",",self.player.vel_y)
         print("Time taken to reach goal (sec): ", player.total_time)
-        self.win.getMouse()
+        #self.win.getMouse()
         self.win.close()
         return player.total_time
     
@@ -123,8 +123,11 @@ if __name__ == "__main__":
     old_time = best_strategies[env_name][mdl_name]['best_time']
     resave = False
     if(old_time == -1):
-        print("This time will be set as the new best time (no other recorded time")
+        print("This time will be set as the new best time (no other recorded time)")
         resave = True
+    if(new_time <= 0):
+        print("Something went wrong, likely not keeping total time in model")
+        sys.exit(0)
     elif(new_time > old_time):
         print('This time was worse than the current best: ', old_time)
     elif(new_time < old_time):

@@ -44,6 +44,7 @@ class DifferentialDrive:
         self.goal_vel_x = 0
         self.goal_vel_y = 0
     def set_velocity(self, goal):
+        self.total_time+=self.dt
         if self.in_final_rotation:
             self.final_rotate()
         elif self.in_rotation:
@@ -140,12 +141,3 @@ class DifferentialDrive:
         self.direction_arrow.setFill('green')
         self.direction_arrow.setArrow("last")
         self.direction_arrow.draw(self.win)
-
-        '''
-        self.needed_direction_arrow = Line(
-            Point(draw_x, draw_y),
-            Point(g.scale(self.pos_x+cos(self.alpha)), g.scale(self.pos_y+sin(self.alpha))))
-        self.needed_direction_arrow.setFill('red')
-        self.needed_direction_arrow.setArrow("last")
-        self.needed_direction_arrow.draw(self.win)
-        '''
