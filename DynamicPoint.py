@@ -48,10 +48,13 @@ class DynamicPoint:
         self.n = 0
         self.beta = 0
         self.c = None
+        self.radius = 0
 
     def set_velocity(self, goal):
         # check if we have reached the next node
         if self.pos_x == self.sling_path[-1][0].x and self.pos_y == self.sling_path[-1][0].y or self.n == 0:
+            self.n = -1
+            print(self.pos_x, self.pos_y,  self.sling_path[-1][0].x,  self.sling_path[-1][0].y)
             # we have reached the next one, but is it
             # the goal node?
             if(len(self.sling_path) == 1):
@@ -90,6 +93,7 @@ class DynamicPoint:
         self.pos_x = (self.pos_x - self.c.x)*cos(self.beta) - (self.pos_y - self.c.y)*sin(self.beta) + self.c.x
         self.pos_y = (self.pos_x - self.c.x)*sin(self.beta) + (self.pos_y - self.c.y)*cos(self.beta) + self.c.y
         
+        print(self.pos_x, self.pos_y)
         self.n-=1
         self.set_graphicals()
 
@@ -140,8 +144,12 @@ class DynamicPoint:
         self.arc_length = abs(theta*radius)
         self.theta = theta
         self.c = c
+        self.radius = radius
 
     def set_graphicals(self):
+        if self.c is not None:
+            cir = Circle(self.c.get_scaled_point(), self.radius)
+            cir.draw(self.win)
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
         if self.body:
