@@ -57,12 +57,18 @@ class RRT:
         self.closest_to_goal = self.start_node
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         k=0
-        while not self.is_path_to_goal() or k < self.K:
+        while not self.is_path_to_goal() and k < self.K:
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
             self.add_between_nearest(q_rand)
             k+=1
+        if not k < self.K:
+            self.set_graphicals(quick_draw=False)
+            print('Could not reach goal, exiting')
+            self.win.getMouse()
+            self.win.close()
+            sys.exit(0)
         self.add_to_nearest(self.goal_node)
 
     def rrt_star(self):
@@ -89,6 +95,12 @@ class RRT:
                             for q in q_all_near:
                                 self.rewire(q, q_new)
                             self.add(q_new, q_best_parent)
+        if not k < self.K:
+            self.set_graphicals(quick_draw=False)
+            print('Could not reach goal, exiting')
+            self.win.getMouse()
+            self.win.close()
+            sys.exit(0)
         self.add_to_nearest(self.goal_node)
 
     def is_path_to_goal(self):
@@ -311,28 +323,29 @@ class RRT:
                         line = Line(curr_loc, neighbor.get_scaled_point())
                         line.draw(self.win)
                         self.drawables.append(line)
-        for i in range(0,len(self.path)-1):
-            node_1 = self.path[i]
-            node_2 = self.path[i+1]
-            cir = Circle(node_1.get_scaled_point(), 2)
-            cir.setFill('Red')
-            cir.setOutline('Red')
-            self.drawable_path.append(cir)
-            lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
-            lin.setOutline('Red')
-            lin.draw(self.win)
-            self.drawable_path.append(lin)
-        for i in range(0,len(self.optimal_path)-1):
-            node_1 = self.optimal_path[i]
-            node_2 = self.optimal_path[i+1]
-            cir = Circle(node_1.get_scaled_point(), 2)
-            cir.setFill('Blue')
-            cir.setOutline('Blue')
-            self.drawable_path.append(cir)
-            lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
-            lin.setOutline('Blue')
-            lin.draw(self.win)
-            self.drawable_path.append(lin)
+        if self.path is not None:
+            for i in range(0,len(self.path)-1):
+                node_1 = self.path[i]
+                node_2 = self.path[i+1]
+                cir = Circle(node_1.get_scaled_point(), 2)
+                cir.setFill('Red')
+                cir.setOutline('Red')
+                self.drawable_path.append(cir)
+                lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
+                lin.setOutline('Red')
+                lin.draw(self.win)
+                self.drawable_path.append(lin)
+            for i in range(0,len(self.optimal_path)-1):
+                node_1 = self.optimal_path[i]
+                node_2 = self.optimal_path[i+1]
+                cir = Circle(node_1.get_scaled_point(), 2)
+                cir.setFill('Blue')
+                cir.setOutline('Blue')
+                self.drawable_path.append(cir)
+                lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
+                lin.setOutline('Blue')
+                lin.draw(self.win)
+                self.drawable_path.append(lin)
         emit_verbose("Drawing RRT took", self.verbose, var=time.time()-t)
 
     def remove_graphicals(self, remove_path=False):
