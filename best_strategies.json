@@ -7,9 +7,9 @@
 			"rrt_strategy": 0
 		},
 		"dynamic_point": {
-			"best_time": -1,
-			"delta_q": 1,
-			"k": 1000,
+			"best_time": 6.199999999999994,
+			"delta_q": 0.8,
+			"k": 3000,
 			"rrt_strategy": 0
 		},
 		"differential_drive": {
@@ -33,9 +33,9 @@
 			"rrt_strategy": 0
 		},
 		"dynamic_point": {
-			"best_time": -1,
-			"delta_q": 1,
-			"k": 1000,
+			"best_time": 6.8999999999999915,
+			"delta_q": 0.8,
+			"k": 3000,
 			"rrt_strategy": 0
 		},
 		"differential_drive": {

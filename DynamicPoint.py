@@ -145,13 +145,13 @@ class DynamicPoint:
         self.path = path
         self.node_count = len(path)
 
-    def add_sling_path(self, goal):
+    def add_sling_path(self, goal, obstacles=None):
         # A path is a list of nodes
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
         acc_series = get_acceleration_series(vel_series, self.acc_max)
-        self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series)
+        self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series, obstacles=obstacles)
         self.sling_path_calculated = self.sling_path
-        print("Path Generated : ", self.sling_path_calculated)
+        #print("Path Generated : ", self.sling_path_calculated)
         self.node_count_sling = len(self.sling_path)
         self.sling_path = [el for el in reversed(self.sling_path)]
         self.sling_vel = [el for el in reversed(self.sling_vel)]

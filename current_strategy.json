@@ -2,7 +2,7 @@
 	"env_name": "P2",
 	"mdl_name": "dynamic_point",
 	"delta_q": 0.8,
-	"k": 500,
+	"k": 3000,
 	"rrt_strategy": 0
 }
 
