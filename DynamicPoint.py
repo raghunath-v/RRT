@@ -42,9 +42,11 @@ class DynamicPoint:
         # for actions
         self.current_action = None
         self.current_acc = np.array([0, 0], dtype=float)
-        self.current_vel = np.array([0, 0], dtype=float)
+        self.current_vel = np.array(vel_start, dtype=float)
         self.new_action = True   #Flag if new action is received
         self.arc_length = 0
+        self.precision = 0.2
+        self.position_error = 0
 
         # for circle/arc parameters
         self.theta = 0
@@ -55,15 +57,18 @@ class DynamicPoint:
 
     def set_velocity(self, goal):
         # check if we have reached the next node
-        if self.pos_x == self.sling_path[-1][0].x and self.pos_y == self.sling_path[-1][0].y or self.n == 0:
+        self.position_error = math.sqrt((self.pos_x - self.sling_path[-1][0].x)**2 + (self.pos_y - self.sling_path[-1][0].y)**2)
+        print(self.position_error, self.n)
+        if self.position_error < self.precision or self.n == 0:
             # we have reached the next one, but is it
             # the goal node?
+
             if (len(self.sling_path) == 1):
                 self.finished = True
                 return
             else:
                 self.current_action = self.sling_path.pop()
-                self.current_vel = self.sling_vel.pop()
+                #self.current_vel = self.sling_vel.pop()
                 self.current_acc = self.sling_acc.pop()
                 self.new_action = True
 
@@ -76,7 +81,8 @@ class DynamicPoint:
                          math.sqrt(np.dot(self.current_vel, self.current_vel))
                 self.theta = self.circle.arcangle(self.current_action[0], self.sling_path[-1][0])
                 self.n = math.floor(self.T / self.dt)
-                self.beta = self.theta / self.n
+                # TODO: Fix this sign. Why should it be negative?
+                self.beta = -self.theta / self.n
                 self.new_action = False
             self.move_circular()
         else:
@@ -86,7 +92,8 @@ class DynamicPoint:
         self.total_time += self.dt
 
     def move_circular(self):
-        angle = atan(-self.current_vel[0] / self.current_vel[1])
+        # TODO: sign fix
+        angle = math.pi + math.atan2(-self.current_vel[0], self.current_vel[1])
         self.current_acc[0] = self.acc_max * cos(angle)
         self.current_acc[1] = self.acc_max * sin(angle)
         rotation_mat = np.array([[cos(self.beta), sin(self.beta)],
@@ -103,7 +110,6 @@ class DynamicPoint:
 
     def move(self):
         angle = atan(self.current_vel[1] / self.current_vel[0])
-        print(self.acc_max)
         self.current_acc[0] = self.acc_max * cos(angle)
         self.current_acc[1] = self.acc_max * sin(angle)
 
@@ -131,21 +137,7 @@ class DynamicPoint:
         self.sling_path = [el for el in reversed(self.sling_path)]
         self.sling_vel = [el for el in reversed(self.sling_vel)]
         self.sling_acc = [el for el in reversed(self.sling_acc)]
-    """
-    def set_circle_params(self):
-        p1, p2 = self.current_action[0], self.sling_path[-1][0]
-        vel_1 = self.current_vel
-        dir_1 = self.current_action[1]
-        slope = -vel_1[0] / vel_1[1]
-        radius = abs(1 / dir_1)
-        k = radius / math.sqrt(1 + slope ** 2)
-        centre = Node(p1.x + k, p1.y + k * slope)
-        circle = DubinCircle(centre, radius, dir_1)
-        theta = circle.arcangle(p1, p2)
-        self.arc_length = circle.arclength(p1, p2)
-        self.theta = theta
-        self.circle = circle
-    """
+
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
@@ -181,7 +173,6 @@ class DynamicPoint:
         self.vel_arrow.draw(self.win)
         if self.acc_arrow:
             self.acc_arrow.undraw()
-        print(self.current_acc)
         self.acc_arrow = Line(
             Point(draw_x, draw_y),
             Point(scale(self.pos_x + self.current_acc[0] * 5), scale(self.pos_y + self.current_acc[1] * 5)))
