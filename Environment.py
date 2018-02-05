@@ -37,8 +37,7 @@ class Environment:
             rrt_setup, self.win)
         self.rrt.generate()
         self.player.add_path(self.rrt.optimal_path)
-        if isinstance(self.player, DynamicPoint):
-            #TODO: check if of instance kin.car as well
+        if isinstance(self.player, DynamicPoint) or isinstance(self.player, KinematicCar):
             self.player.add_sling_path(self.goal)
         self.rrt.set_graphicals(self.quick_draw)
         #self.rrt.remove_graphicals()
@@ -47,7 +46,6 @@ class Environment:
         self.init_draw()
         self.gen_rrt(rrt_setup)
         while not self.player.finished:
-            #self.player.set_auto_velocity(self.goal)
             self.player.set_velocity(self.goal)
         self.player.set_graphicals()
         print("Is finshed")

@@ -103,11 +103,11 @@ def get_velocity_at_circle(start_pos, start_vel, steer, final_pos):
     return new_vel
 
 
-def getBestDubinPath(P1, V1, A1, P2, V2, A2):
+def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False):
     #paths=['RSR', 'LSL', 'RSL', 'LSR']
 
-    C1_1, C2_1 = getDubinCircles(P1, V1, A1)
-    C1_2, C2_2 = getDubinCircles(P2, V2, A2)
+    C1_1, C2_1 = getDubinCircles(P1, V1, A1, kinematic=kinematic)
+    C1_2, C2_2 = getDubinCircles(P2, V2, A2, kinematic=kinematic)
 
     bestPath = []
     bestDist = math.inf
@@ -124,9 +124,12 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2):
 
     return bestPath
 
-def getDubinCircles(node, vel, acc):
+def getDubinCircles(node, vel, acc, kinematic=False):
     slope = -vel[0] / vel[1]
-    radius = get_radius(vel, acc)
+    if kinematic:
+        radius = acc
+    else:
+        radius = get_radius(vel, acc)
     k = radius / math.sqrt(1 + slope ** 2)
 
     #Direction
@@ -173,6 +176,26 @@ def find_acc(u, v, S):
     acc_mag = (v_mag ** 2 - u_mag ** 2) / 2 * S
     acceleration = np.array([acc_mag*math.cos(angle), acc_mag*math.sin(angle)])
     return acceleration
+
+
+def create_kinematic_sling_path(path, vel_series, turning_radius):
+    new_path = []
+    new_vel_series = []
+    for i in range(len(path)-1):
+        best_dubin_path = getBestDubinPath(path[i], vel_series[i], turning_radius,
+            path[i+1], vel_series[i+1], turning_radius, kinematic=True)
+        # Insert new nodes from dubin path
+        new_path.append(best_dubin_path[0])     # The starting node in dubin path
+        new_path.append(best_dubin_path[1])     # Tangent point T1
+        new_path.append(best_dubin_path[2])     # Tangent point T2
+        # Insert new velocities for dubin path
+        new_vel_series.append(vel_series[i])    # Velocity at the start point of dubin
+        new_vel_series.append(vel_series[i])    # Velocity at the tangent T1
+        new_vel_series.append(vel_series[i+1])  # Velocity at the tangent T2
+    # Append goal node, velocity and and acceleration
+    new_path.append([path[len(path) - 1], 0])
+    new_vel_series.append(vel_series[len(path) - 1])
+    return new_path, new_vel_series
 
 def create_sling_path(path, vel_series, acc_series):
     #get_velocity_series(path, vel_start, vel_goal)

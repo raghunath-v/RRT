@@ -1,6 +1,7 @@
 import json
 from graphics import * 
 import g_tools as g
+from Path import *
 from Goal import Goal
 from math import atan, acos, sin, cos, sqrt, tan
 
@@ -11,6 +12,7 @@ class KinematicCar:
         # dynamics related
         vel_x = vel_start[0]
         vel_y = vel_start[1]
+        self.vel_start = vel_start
         self.vel_max = vel_max
         self.pos_x = pos_start[0]
         self.pos_y = pos_start[1]
@@ -21,32 +23,32 @@ class KinematicCar:
         self.phi_max = phi_max
         self.length = length
         self.theta = atan(vel_y/vel_x)
+        self.max_turn_radius = self.length/tan(self.phi_max) 
         # makes sense to me to set turning to 0 in refernece
         # to itself initially instead of an arbitrary 0 
         self.phi = self.theta
         self.vel_magnitude = sqrt(vel_x**2 + vel_y**2)
+        
         # path planning related
         self.path = None
-        self.node_count = 0
-        self.path_idx = 0
-        self.next_node = None
         self.finished = False
+        self.sling_path = None
+        self.sling_path_calculated = None
+        self.sling_vel = None
+        self.sling_acc = None
         self.total_time = 0
-        self.in_rotation = False
-        self.is_moving = False
-        self.at_node = True
-        self.at_new_node = False
 
         # graphics related
         self.body_back = None # the actual position
         self.body_front = None
         self.direction_arrow = None
         self.turning_arrow = None
+        self.sling_path_drawables = None
         self.body_back_radius = 10
         self.body_front_radius = 5
         self.win = win
-
-    def set_velocity(self):
+        
+    def set_velocity(self, goal):
         '''
             Change stuff here. Like I understand it,
             the velocity should be considered a scalar
@@ -58,11 +60,23 @@ class KinematicCar:
         '''
 
     def move(self):
-        self.pos_x+= self.vel_magnitude*cos(self.theta)*dt
-        self.pos_y+= self.vel_magnitude*sin(self.theta)*dt
+        self.pos_x+= self.vel_magnitude*cos(self.theta)*self.dt
+        self.pos_y+= self.vel_magnitude*sin(self.theta)*self.dt
         # according to the lecture, this is the order of things
-        self.theta+=(self.vel_magnitude/self.length)*tan(self.phi)*dt
+        self.theta+=(self.vel_magnitude/self.length)*tan(self.phi)*self.dt
         self.set_graphicals()
+
+    def add_path(self, path):
+        self.path = path
+
+    def add_sling_path(self, goal):
+         # A path is a list of nodes
+        vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
+        self.sling_path, self.sling_vel = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius)
+        self.sling_path_calculated = self.sling_path
+        self.node_count_sling = len(self.sling_path)
+        self.sling_path = [el for el in reversed(self.sling_path)]
+        self.sling_vel = [el for el in reversed(self.sling_vel)]
 
     def set_graphicals(self):
         draw_back_x = g.scale(self.pos_x)
@@ -89,33 +103,11 @@ class KinematicCar:
         self.turning_arrow.setFill('green')
         self.turning_arrow.setArrow('last')
         self.turning_arrow.draw(self.win)
+        
+        # Sling path related plotting
 
-
-if __name__ == '__main__':
-    with open("environments/P1.json") as json_file:
-        desc = json.load(json_file)
-    canvas_width = 800
-    canvas_height = 800
-    win = GraphWin("area", canvas_width, canvas_height)
-    win.yUp()
-    bounding_poly = desc['bounding_polygon']
-    obstacles = [desc[key] for key, val in desc.items() if key.startswith('obs')]
-    pos_start = desc['pos_start']
-    pos_goal = desc['pos_goal']
-    vel_start = desc['vel_start']
-    vel_goal = desc['vel_goal']
-    dt = desc['vehicle_dt']
-    v_max = desc['vehicle_v_max']
-    a_max = desc['vehicle_a_max']
-    omega_max = desc['vehicle_omega_max']
-    phi_max = desc['vehicle_phi_max']
-    vehicle_length = desc['vehicle_L']
-    player = KinematicCar(vel_start, pos_start, v_max, vehicle_length, phi_max, dt, win)
-    player.pos_x = 25
-    player.pos_y = 25
-    player.set_graphicals()
-    for i in range(1000):
-        player.move()
-
-    win.getMouse()
-    win.close()
+        if self.sling_path_calculated is not None:
+            self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
+                for action in self.sling_path_calculated]
+            for el in self.sling_path_drawables:
+                el.draw(self.win)

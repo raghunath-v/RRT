@@ -152,7 +152,7 @@ class DynamicPoint:
 
         # Draw the new path
         if self.sling_path_calculated is not None:
-            self.sling_path_drawables = [Circle(action[0].get_scaled_point(), self.body_radius) 
+            self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
                 for action in self.sling_path_calculated]
             for el in self.sling_path_drawables:
                 el.draw(self.win)
