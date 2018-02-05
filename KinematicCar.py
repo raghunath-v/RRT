@@ -47,7 +47,15 @@ class KinematicCar:
         self.win = win
 
     def set_velocity(self):
-        return False
+        '''
+            Change stuff here. Like I understand it,
+            the velocity should be considered a scalar
+            while theta, which is determined by phi, should
+            control the direction of the vehicle. So here we
+            can change the velocity scalar and the current phi
+            while taking into consderation the constraints of 
+            max_phi and max_velocity
+        '''
 
     def move(self):
         self.pos_x+= self.vel_magnitude*cos(self.theta)*dt
