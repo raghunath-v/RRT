@@ -17,7 +17,7 @@ class Environment:
     models, generating obstacles and visualizing it.
     '''
 
-    def __init__(self, obs, bounding, player, goal, win):
+    def __init__(self, obs, bounding, player, goal, win, quick_draw=False):
         '''
         m_type : [0,1,2,3] = [the models available]
         obs = list of lists of [x,y], each representing an obstacle
@@ -30,6 +30,7 @@ class Environment:
         self.player = player
         self.goal = goal
         self.rrt = None
+        self.quick_draw = quick_draw
 
     def gen_rrt(self, rrt_setup):
         self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
@@ -39,7 +40,7 @@ class Environment:
         if isinstance(self.player, DynamicPoint):
             #TODO: check if of instance kin.car as well
             self.player.add_sling_path(self.goal)
-        self.rrt.set_graphicals()
+        self.rrt.set_graphicals(self.quick_draw)
         #self.rrt.remove_graphicals()
 
     def run(self, rrt_setup):
@@ -57,7 +58,8 @@ class Environment:
         print("goal: ", self.goal.vel_x,",",self.goal.vel_y)
         print("player: ", self.player.vel_x,",",self.player.vel_y)
         print("Time taken to reach goal (sec): ", player.total_time)
-        #self.win.getMouse()
+        # comment line below to record time
+        self.win.getMouse()
         self.win.close()
         return player.total_time
     
@@ -117,7 +119,7 @@ if __name__ == "__main__":
         sys.exit(0)
     
     goal = Goal(vel_goal, pos_goal, win)
-    env = Environment(obstacles, bounding_poly, player, goal, win)
+    env = Environment(obstacles, bounding_poly, player, goal, win, quick_draw=True)
     rrt_setup = {'delta_q': delta_q, 'k': k, 'strategy':rrt_strat, 'x_range': [-2,60], 'y_range': [-2,60]}
     new_time = env.run(rrt_setup)
     old_time = best_strategies[env_name][mdl_name]['best_time']
@@ -125,7 +127,7 @@ if __name__ == "__main__":
     if(old_time == -1):
         print("This time will be set as the new best time (no other recorded time)")
         resave = True
-    if(new_time <= 0):
+    elif(new_time <= 0):
         print("Something went wrong, likely not keeping total time in model")
         sys.exit(0)
     elif(new_time > old_time):
@@ -144,4 +146,4 @@ if __name__ == "__main__":
         }
         with open('best_strategies.json', 'w') as json_file:
             json.dump(best_strategies, json_file)
-
+        

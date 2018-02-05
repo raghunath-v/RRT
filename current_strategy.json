@@ -1,7 +1,8 @@
 {
-	"env_name": "P3",
-	"mdl_name": "differential_drive",
-	"delta_q": 1,
-	"k": 500,
+	"env_name": "P1",
+	"mdl_name": "kinematic_car",
+	"delta_q": 0.8,
+	"k": 1700,
 	"rrt_strategy": 0
 }
+

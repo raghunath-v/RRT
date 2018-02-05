@@ -72,7 +72,7 @@ class RRT:
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         self.add_node(self.start_node)
         k = 0
-        while not self.is_path_to_goal() or k < self.K:
+        while not self.is_path_to_goal() and k < self.K:
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
@@ -294,26 +294,23 @@ class RRT:
         else:
             return Node(random.uniform(self.min_x, self.max_x), random.uniform(self.min_x, self.max_x))
 
-    def set_graphicals(self, draw_nodes=True, draw_edges=True):
+    def set_graphicals(self, quick_draw):
         """Draws the graph"""
         self.drawables = []
         self.drawable_path = []
         t = time.time()
-        if draw_nodes or draw_edges:
-            for node in self.graph:
-                curr_loc = node.get_scaled_point()
-                if draw_nodes:
-                    draw_node = Circle(curr_loc, 1)
-                    draw_node.setFill('red')
-                    draw_node.draw(self.win)
-                    self.drawables.append(draw_node)
-                if draw_edges:
-                    for neighbor in self.graph[node]:
-                        if neighbor:
-                            line = Line(curr_loc, neighbor.get_scaled_point())
-                            line.draw(self.win)
-                            self.drawables.append(line)
-
+        for node in self.graph:
+            curr_loc = node.get_scaled_point()
+            draw_node = Circle(curr_loc, 1)
+            draw_node.setFill('red')
+            draw_node.draw(self.win)
+            self.drawables.append(draw_node)
+            if not quick_draw:
+                for neighbor in self.graph[node]:
+                    if neighbor:
+                        line = Line(curr_loc, neighbor.get_scaled_point())
+                        line.draw(self.win)
+                        self.drawables.append(line)
         for i in range(0,len(self.path)-1):
             node_1 = self.path[i]
             node_2 = self.path[i+1]
@@ -336,11 +333,6 @@ class RRT:
             lin.setOutline('Blue')
             lin.draw(self.win)
             self.drawable_path.append(lin)
-
-        #for drawable in self.drawables:
-        #    drawable.draw(self.win)
-        #for drawable in self.drawable_path:
-        #    drawable.draw(self.win)
         emit_verbose("Drawing RRT took", self.verbose, var=time.time()-t)
 
     def remove_graphicals(self, remove_path=False):

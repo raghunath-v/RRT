@@ -18,6 +18,7 @@ class DifferentialDrive:
         self.turn_max = turn_max
         self.beta = 1
         self.alpha = -1
+
         # path planning related
         self.path = None
         self.node_count = 0
@@ -26,10 +27,11 @@ class DifferentialDrive:
         self.finished = False
         self.total_time = 0
         self.in_rotation = False
-        self.is_moving = False
-        self.at_node = True
-        self.at_new_node = False
-
+        self.in_motion = False
+        self.in_final_rotation = False
+        self.goal_vel_x = 0
+        self.goal_vel_y = 0
+        
         # graphics related
         self.body = None
         self.velocity_arrow = None
@@ -38,11 +40,6 @@ class DifferentialDrive:
         self.body_radius = 10
         self.win = win
 
-        self.in_rotation = False
-        self.in_motion = False
-        self.in_final_rotation = False
-        self.goal_vel_x = 0
-        self.goal_vel_y = 0
     def set_velocity(self, goal):
         self.total_time+=self.dt
         if self.in_final_rotation:
