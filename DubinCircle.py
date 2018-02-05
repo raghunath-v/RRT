@@ -88,6 +88,6 @@ class DubinCircle:
                        p1.y - self.c.y])
         v2 = np.array([p2.x - self.c.x,
                        p2.y - self.c.y])
-        theta = math.atan(v2[1]/ v2[0]) - math.atan(v1[1]/ v1[0])
+        theta = math.atan2(v2[1], v2[0]) - math.atan2(v1[1], v1[0])
 
         return theta

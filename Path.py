@@ -108,7 +108,7 @@ def get_velocity_at_circle(start_pos, start_vel, steer, final_pos):
     sign = get_sign(steer)
     rotation_matrix = np.array([[math.cos(angle), sign*math.sin(angle)],
                               [sign*math.sin(angle), math.cos(angle)]])
-    new_vel = (rotation_matrix * start_vel.T).T
+    new_vel = (rotation_matrix @ start_vel.T).T
     return new_vel
 
 
@@ -170,7 +170,7 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
 def get_acceleration_series(path, acc_max):
     # TODO: We reduce acceleration ALOT when we are going through a circle
     # find a way to NOT do that. SMALL RADIUS
-    scaleAcc = 0.2
+    scaleAcc = 0.6
     acc_series = [scaleAcc * np.array([acc_max/1.414, acc_max/1.414])]
     for i in range(1, len(path)-1):
         acc_series.append(scaleAcc * np.array([acc_max/1.414, acc_max/1.414]))
@@ -222,9 +222,15 @@ def create_sling_path(path, vel_series, acc_series):
         new_path.append(best_dubin_path[2])     # Tangent point T2
 
         # Insert new velocities for dubin path
-        new_vel_series.append(vel_series[i])    # Velocity at the start point of dubin
-        new_vel_series.append(vel_series[i])    # Velocity at the tangent T1
-        new_vel_series.append(vel_series[i+1])  # Velocity at the tangent T2
+        new_vel_series.append(vel_series[i])            # Velocity at the start point of dubin
+
+        new_vel = get_velocity_at_circle(best_dubin_path[0][0], vel_series[i],
+                                        best_dubin_path[0][1], best_dubin_path[1][0])  # Velocity at the tangent T1
+        new_vel_series.append(new_vel)
+
+        new_vel = get_velocity_at_circle(path[i+1], vel_series[i+1],
+                                         best_dubin_path[2][1], best_dubin_path[2][0])  # Velocity at the tangent T2
+        new_vel_series.append(new_vel)
 
         # Insert new accelerations for dubin path
         # Find the acceleration needed to go from tangent points 1 to 2

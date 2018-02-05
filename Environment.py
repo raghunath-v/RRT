@@ -54,10 +54,10 @@ class Environment:
         print("player: ", self.player.pos_x,",",self.player.pos_y)
         print("Velocity:")
         print("goal: ", self.goal.vel_x,",",self.goal.vel_y)
-        print("player: ", self.player.vel_x,",",self.player.vel_y)
+        print("player: ", self.player.current_vel[0],",",self.player.current_vel[1])
         print("Time taken to reach goal (sec): ", player.total_time)
         # comment line below to record time
-        self.win.getMouse()
+        #self.win.getMouse()
         self.win.close()
         return player.total_time
     
