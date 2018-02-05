@@ -37,6 +37,7 @@ def get_tangents(Circle1, Circle2):
         C2 = C1
         C1 = temp
         swapped = True
+        print("Im swapping")
 
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
@@ -59,14 +60,18 @@ def get_tangents(Circle1, Circle2):
                 C2.y + R2 * (math.sin(-(math.pi - alpha) + theta)))
 
     if check_swap and swapped:
-        if (dir1 > 0 and dir2 > 0):
-            tangents.append((T1_2, T1_1))
         if (dir1 < 0 and dir2 < 0):
+            print("Tan1")
+            tangents.append((T1_2, T1_1))
+        if (dir1 > 0 and dir2 > 0):
+            print("Tan2")
             tangents.append((T2_2, T2_1))
     else:
         if (dir1 > 0 and dir2 > 0):
+            print("Tan3")
             tangents.append((T1_1, T1_2))
         if (dir1 < 0 and dir2 < 0):
+            print("Tan4")
             tangents.append((T2_1, T2_2))
 
     #Inner tangents
@@ -81,13 +86,17 @@ def get_tangents(Circle1, Circle2):
 
     if check_swap and swapped:
         if (dir1 > 0 and dir2 < 0):
+            print("Tan5")
             tangents.append((T1_2, T1_1))
         if (dir1 < 0 and dir2 > 0):
+            print("Tan6")
             tangents.append((T2_2, T2_1))
     else:
         if (dir1 > 0 and dir2 < 0):
+            print("Tan7")
             tangents.append((T1_1, T1_2))
         if (dir1 < 0 and dir2 > 0):
+            print("Tan8")
             tangents.append((T2_1, T2_2))
 
     return tangents
@@ -239,11 +248,11 @@ def create_sling_path(path, vel_series, acc_series):
     return new_path, new_vel_series, new_acc_series
 
 
-if __name__=='__main__': #Test for dynamic
-    goal = Node(10, 15)
-    init = Node(1, 2)
-    v_in = np.array([-0.9, 0.2])
-    v_fin = np.array([-0.9, -0.9])
+if __name__=='__test__': #Test for dynamic
+    init = Node(10, 15)
+    goal = Node(1, 2)
+    v_in = np.array([0.9, -0.2])
+    v_fin = np.array([0.5, -0.5])
     a_max = 0.5
 
     canvas_width = 800
@@ -306,12 +315,12 @@ if __name__=='__main__': #Test for dynamic
     win.close()
 
 
-if __name__=='__test__':  #This works
-    goal = Node(10, 15)
-    init = Node(1, 2)
+if __name__=='__main__':  #This works
+    init = Node(10, 15)
+    goal = Node(1, 2)
     v_in = np.array([-0.9, 0.2])
-    v_fin = np.array([-0.9, -0.9])
-    a_max = 0.5
+    v_fin = np.array([-0.9, -0.2])
+    a_max = 0.2
 
     canvas_width = 800
     canvas_height = 800
