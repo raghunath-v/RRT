@@ -5,6 +5,9 @@ import math
 
 SCALE_FACTOR = 14
 
+def get_sign(x):
+    return x and (1, -1)[x < 0]
+
 def gen_point_list(points):
     # points: [[x_1, y_1],...,[x_N, y_N]]
     # have to make sure each 

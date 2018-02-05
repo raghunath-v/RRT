@@ -5,6 +5,7 @@ import numpy as np
 import math as math
 from DubinCircle import *
 from Node import Node
+from g_tools import get_sign
 
 INCREASE_RADIUS = 6
 
@@ -13,7 +14,7 @@ def get_dist(p1, p2):
     return distance
 
 def get_radius(v,acc):
-    return math.sqrt(v[0]**2+v[1]**2)/acc
+    return math.sqrt(v[0]**2+v[1]**2)/math.sqrt(np.dot(acc, acc))
 
 def get_tangents(Circle1, Circle2):
     """The function returns only one tangent for directional circles"""
@@ -48,48 +49,58 @@ def get_tangents(Circle1, Circle2):
     beta = math.acos((R1+R2)/d)
 
     #Outer tangents
-    T1_1 = Node(math.ceil(C1.x + R1 * (math.cos(alpha + theta))),
-                math.ceil(C1.y + R1 * (math.sin(alpha + theta))))
-    T1_2 = Node(math.ceil(C2.x + R2 * (math.cos(math.pi - alpha + theta))),
-                math.ceil(C2.y + R2 * (math.sin(math.pi - alpha + theta))))
-    T2_1 = Node(math.ceil(C1.x + R1 * (math.cos(-alpha + theta))),
-                math.ceil(C1.y + R1 * (math.sin(-alpha + theta))))
-    T2_2 = Node(math.ceil(C2.x + R2 * (math.cos(-(math.pi - alpha) + theta))),
-                math.ceil(C2.y + R2 * (math.sin(-(math.pi - alpha) + theta))))
+    T1_1 = Node(C1.x + R1 * (math.cos(alpha + theta)),
+                C1.y + R1 * (math.sin(alpha + theta)))
+    T1_2 = Node(C2.x + R2 * (math.cos(math.pi - alpha + theta)),
+                C2.y + R2 * (math.sin(math.pi - alpha + theta)))
+    T2_1 = Node(C1.x + R1 * (math.cos(-alpha + theta)),
+                C1.y + R1 * (math.sin(-alpha + theta)))
+    T2_2 = Node(C2.x + R2 * (math.cos(-(math.pi - alpha) + theta)),
+                C2.y + R2 * (math.sin(-(math.pi - alpha) + theta)))
 
     if check_swap and swapped:
-        if (dir1 < 0 and dir2 < 0):
-            tangents.append((T1_2, T1_1))
         if (dir1 > 0 and dir2 > 0):
+            tangents.append((T1_2, T1_1))
+        if (dir1 < 0 and dir2 < 0):
             tangents.append((T2_2, T2_1))
     else:
-        if (dir1 < 0 and dir2 < 0):
-            tangents.append((T1_1, T1_2))
         if (dir1 > 0 and dir2 > 0):
+            tangents.append((T1_1, T1_2))
+        if (dir1 < 0 and dir2 < 0):
             tangents.append((T2_1, T2_2))
 
     #Inner tangents
-    T1_1 = Node(math.ceil(C1.x + R1 * (math.cos(beta + theta))),
-                math.ceil(C1.y + R1 * (math.sin(beta + theta))))
-    T1_2 = Node(math.ceil(C2.x + R2 * (math.cos(-(math.pi - beta) + theta))),
-                math.ceil(C2.y + R2 * (math.sin(-(math.pi - beta) + theta))))
-    T2_1 = Node(math.ceil(C1.x + R1 * (math.cos(-beta + theta))),
-                math.ceil(C1.y + R1 * (math.sin(-beta + theta))))
-    T2_2 = Node(math.ceil(C2.x + R2 * (math.cos(math.pi - beta + theta))),
-                math.ceil(C2.y + R2 * (math.sin(math.pi - beta + theta))))
+    T1_1 = Node(C1.x + R1 * (math.cos(beta + theta)),
+                C1.y + R1 * (math.sin(beta + theta)))
+    T1_2 = Node(C2.x + R2 * (math.cos(-(math.pi - beta) + theta)),
+                C2.y + R2 * (math.sin(-(math.pi - beta) + theta)))
+    T2_1 = Node(C1.x + R1 * (math.cos(-beta + theta)),
+                C1.y + R1 * (math.sin(-beta + theta)))
+    T2_2 = Node(C2.x + R2 * (math.cos(math.pi - beta + theta)),
+                C2.y + R2 * (math.sin(math.pi - beta + theta)))
 
     if check_swap and swapped:
-        if (dir1 < 0 and dir2 > 0):
-            tangents.append((T1_2, T1_1))
         if (dir1 > 0 and dir2 < 0):
+            tangents.append((T1_2, T1_1))
+        if (dir1 < 0 and dir2 > 0):
             tangents.append((T2_2, T2_1))
     else:
-        if (dir1 < 0 and dir2 > 0):
-            tangents.append((T1_1, T1_2))
         if (dir1 > 0 and dir2 < 0):
+            tangents.append((T1_1, T1_2))
+        if (dir1 < 0 and dir2 > 0):
             tangents.append((T2_1, T2_2))
 
     return tangents
+
+def get_velocity_at_circle(start_pos, start_vel, steer, final_pos):
+    radius = abs(1/steer)
+    side = math.sqrt((final_pos.x - start_pos.x)**2 + (final_pos.y - start_pos.y)**2)
+    angle = math.acos(1 - (side**2/(2*radius**2)))
+    sign = get_sign(steer)
+    rotation_matrix = np.array([[math.cos(angle), sign*math.sin(angle)],
+                              [sign*math.sin(angle), math.cos(angle)]])
+    new_vel = (rotation_matrix * start_vel.T).T
+    return new_vel
 
 
 def getBestDubinPath(P1, V1, A1, P2, V2, A2):
@@ -118,21 +129,19 @@ def getDubinCircles(node, vel, acc):
     radius = get_radius(vel, acc)
     k = radius / math.sqrt(1 + slope ** 2)
 
-    # First Circle
-    centre1 = Node(node.x + k, node.y + k * slope)
-    if vel[1] > 0:
+    #Direction
+    if vel[1] < 0:
         direc = -1/radius
     else:
         direc = 1/radius
+
+    # First Circle
+    centre1 = Node(node.x + k, node.y + k * slope)
     circle1 = DubinCircle(centre1, radius, direc)
 
     # Second Circle
     centre2 = Node(node.x - k, node.y - k * slope)
-    if vel[1] > 0:
-        direc = -1/radius
-    else:
-        direc = 1/radius
-    circle2 = DubinCircle(centre2, radius, direc)
+    circle2 = DubinCircle(centre2, radius, -direc)
 
     return circle1, circle2
 
@@ -150,16 +159,19 @@ def get_acceleration_series(path, acc_max):
     # TODO: We reduce acceleration ALOT when we are going through a circle
     # find a way to NOT do that. SMALL RADIUS
     scaleAcc = 0.2
-    acc_series = [acc_max*scaleAcc]
+    acc_series = [scaleAcc * np.array([acc_max/1.414, acc_max/1.414])]
     for i in range(1, len(path)-1):
-        acc_series.append(acc_max*scaleAcc)
-    acc_series.append(acc_max*scaleAcc)
+        acc_series.append(scaleAcc * np.array([acc_max/1.414, acc_max/1.414]))
+    acc_series.append(scaleAcc * np.array([acc_max/1.414, acc_max/1.414]))
     return acc_series
 
 def find_acc(u, v, S):
     u_mag = math.sqrt(u[0]**2 + u[1]**2)
     v_mag = math.sqrt(v[0] ** 2 + v[1] ** 2)
-    acceleration = (v_mag ** 2 - u_mag ** 2) / 2 * S
+    #TODO Throw an error if u and v are not aligned
+    angle = math.atan(u[1]/u[0])
+    acc_mag = (v_mag ** 2 - u_mag ** 2) / 2 * S
+    acceleration = np.array([acc_mag*math.cos(angle), acc_mag*math.sin(angle)])
     return acceleration
 
 def create_sling_path(path, vel_series, acc_series):
@@ -173,21 +185,29 @@ def create_sling_path(path, vel_series, acc_series):
                          path[i+1], vel_series[i+1], acc_series[i+1])
 
         # Insert new nodes from dubin path
-        new_path.append(best_dubin_path[0])
-        new_path.append(best_dubin_path[1])
-        new_path.append(best_dubin_path[2])
+        new_path.append(best_dubin_path[0])     # The starting node in dubin path
+        new_path.append(best_dubin_path[1])     # Tangent point T1
+        new_path.append(best_dubin_path[2])     # Tangent point T2
 
         # Insert new velocities for dubin path
-        new_vel_series.append(vel_series[i])
-        new_vel_series.append(vel_series[i])
-        new_vel_series.append(vel_series[i+1])
+        new_vel_series.append(vel_series[i])    # Velocity at the start point of dubin
+        new_vel_series.append(vel_series[i])    # Velocity at the tangent T1
+        new_vel_series.append(vel_series[i+1])  # Velocity at the tangent T2
 
         # Insert new accelerations for dubin path
         # Find the acceleration needed to go from tangent points 1 to 2
-        new_acc_series.append(acc_series[i])
+        angle = math.atan(-vel_series[i][0] / vel_series[i][1])
+        acc_mag = math.sqrt(np.dot(acc_series[i], acc_series[i]))
+        new_acc = np.array([acc_mag * math.cos(angle), acc_mag * math.sin(angle)])
+
+        new_acc_series.append(new_acc)
         new_acc_series.append(find_acc(vel_series[i], vel_series[i+1],
                                        best_dubin_path[1][0].dist_to(best_dubin_path[2][0])))
-        new_acc_series.append(acc_series[i+1])
+
+        angle = math.atan(-vel_series[i+1][0] / vel_series[i+1][1])
+        acc_mag = math.sqrt(np.dot(acc_series[i+1], acc_series[i+1]))
+        new_acc = np.array([acc_mag * math.cos(angle), acc_mag * math.sin(angle)])
+        new_acc_series.append(new_acc)
 
     # Append goal node, velocity and and acceleration
     new_path.append([path[len(path) - 1], 0])
@@ -196,42 +216,96 @@ def create_sling_path(path, vel_series, acc_series):
     return new_path, new_vel_series, new_acc_series
 
 
-if __name__=='__test__': #Test for dynamic
-    goal = Node(400, 300)
-    init = Node(150, 200)
-    v_in = np.array([-30, 30])
-    v_fin = np.array([-20, -20])
-    a_max = 0.5
-
-    WIDTH = 600
-    HEIGHT = 600
-
-    C1_init, C2_init = getDubinCircles(init, v_in, a_max)
-    C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
-
-    dubin_path = getBestDubinPath(init, v_in, a_max, goal, v_fin, a_max)
-    tangents = get_tangents(C1_init, C1_goal)
-
-
-if __name__=='__main__':
-    goal = Node(400, 300)
-    init = Node(150, 200)
-    v_in = np.array([-30, 30])
-    v_fin = np.array([-20, -20])
+if __name__=='__main__': #Test for dynamic
+    goal = Node(10, 15)
+    init = Node(1, 2)
+    v_in = np.array([-0.9, 0.2])
+    v_fin = np.array([-0.9, -0.9])
     a_max = 0.5
 
     canvas_width = 800
     canvas_height = 800
     win = GraphWin("area", canvas_width, canvas_height)
+    win.yUp()
+    C1_init, C2_init = getDubinCircles(init, v_in, a_max)
+    C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
+    dubin_path = getBestDubinPath(init, v_in, a_max, goal, v_fin, a_max)
+
+    tangents = []
+    for circ1 in [C1_init, C2_init]:
+        for circ2 in [C1_goal, C2_goal]:
+            tan = get_tangents(circ1, circ2)
+            tangents.append((tan[0][0], tan[0][1]))
+
+    # Draw everything
+    g = Circle(init.get_scaled_point(), 5)
+    g.setOutline('Green')
+    g.setFill('Green')
+    g.draw(win)
+
+    g = Circle(goal.get_scaled_point(), 5)
+    g.setOutline('Red')
+    g.setFill('Red')
+    g.draw(win)
+
+    dubin_circ = DubinCircle.fromArc(dubin_path[0][0], dubin_path[1][0], dubin_path[0][1])
+    g = Circle(dubin_circ.get_scaled_centre(), scale_vectors(dubin_circ.r))
+    g.setOutline('Green')
+    g.draw(win)
+
+    dubin_circ = DubinCircle.fromArc(dubin_path[2][0], goal, dubin_path[2][1])
+    g = Circle(dubin_circ.get_scaled_centre(), scale_vectors(dubin_circ.r))
+    g.setOutline('Green')
+    g.draw(win)
+
+    g = Circle(dubin_path[1][0].get_scaled_point(), 5)
+    g.setOutline('Green')
+    g.setFill('Green')
+    g.draw(win)
+
+    g = Circle( dubin_path[2][0].get_scaled_point(), 5)
+    g.setOutline('Blue')
+    g.setFill('Blue')
+    g.draw(win)
+
+    Line(dubin_path[1][0].get_scaled_point(), dubin_path[2][0].get_scaled_point()).draw(win)
+
+
+
+
+    # Draw velocity vectors
+    new = Node(init.x + v_in[0], init.y + v_in[1])
+    Line(init.get_scaled_point(), new.get_scaled_point()).draw(win)
+    new = Node(goal.x + v_fin[0], goal.y + v_fin[1])
+    Line(goal.get_scaled_point(), new.get_scaled_point()).draw(win)
+
+    win.getMouse()
+    win.close()
+
+
+if __name__=='__test__':  #This works
+    goal = Node(10, 15)
+    init = Node(1, 2)
+    v_in = np.array([-0.9, 0.2])
+    v_fin = np.array([-0.9, -0.9])
+    a_max = 0.5
+
+    canvas_width = 800
+    canvas_height = 800
+    win = GraphWin("area", canvas_width, canvas_height)
+    win.yUp()
 
     C1_init, C2_init = getDubinCircles(init, v_in, a_max)
     C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
 
-    dubin_path = getBestDubinPath(init, v_in, a_max, goal, v_fin, a_max)
+    #dubin_path = getBestDubinPath(init, v_in, a_max, goal, v_fin, a_max)
 
     #print(C1_init.get_dir(), C1_goal.get_dir())
-
-    tangents = get_tangents(C1_init, C1_goal)
+    tangents = []
+    for circ1 in [C1_init, C2_init]:
+        for circ2 in [C1_goal, C2_goal]:
+            tan = get_tangents(circ1, circ2)
+            tangents.append((tan[0][0], tan[0][1]))
 
 
     # Draw everything
@@ -241,12 +315,12 @@ if __name__=='__main__':
     g.setFill('Green')
     g.draw(win)
 
-    g = Circle(C1_init.get_scaled_centre(), C1_init.r)
+    g = Circle(C1_init.get_scaled_centre(), scale_vectors(C1_init.r))
     g.setOutline('Green')
     #g.setFill('Black')
     g.draw(win)
 
-    g = Circle(C2_init.get_scaled_centre(), C2_init.r)
+    g = Circle(C2_init.get_scaled_centre(), scale_vectors(C2_init.r))
     g.setOutline('Green')
     #g.setFill('Black')
     g.draw(win)
@@ -256,12 +330,12 @@ if __name__=='__main__':
     g.setFill('Red')
     g.draw(win)
 
-    g = Circle(C1_goal.get_scaled_centre(), C1_goal.r)
+    g = Circle(C1_goal.get_scaled_centre(), scale_vectors(C1_goal.r))
     g.setOutline('Black')
     #g.setFill('Red')
     g.draw(win)
 
-    g = Circle(C2_goal.get_scaled_centre(), C2_goal.r)
+    g = Circle(C2_goal.get_scaled_centre(), scale_vectors(C2_goal.r))
     g.setOutline('Black')
     #g.setFill('Red')
     g.draw(win)
@@ -279,13 +353,13 @@ if __name__=='__main__':
         g.setFill('Blue')
         g.draw(win)
 
-        Line(tan[0].get_point(),tan[1].get_scaled_point()).draw(win)
+        Line(tan[0].get_scaled_point(), tan[1].get_scaled_point()).draw(win)
 
     #Draw velocity vectors
-    new = Point(init.x + v_in[0], init.y + v_in[1])
-    Line(init.get_point(), new).draw(win)
-    new = Point(goal.x + v_fin[0], goal.y + v_fin[1])
-    Line(goal.get_point(), new).draw(win)
+    new = Node(init.x + v_in[0], init.y + v_in[1])
+    Line(init.get_scaled_point(), new.get_scaled_point()).draw(win)
+    new = Node(goal.x + v_fin[0], goal.y + v_fin[1])
+    Line(goal.get_scaled_point(), new.get_scaled_point()).draw(win)
 
     win.getMouse()
     win.close()
