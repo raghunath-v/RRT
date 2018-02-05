@@ -1,1 +1,80 @@
-{"P1": {"dynamic_point": {"rrt_strategy": 0, "best_time": 17.30000000000011, "k": 500, "delta_q": 0.8}, "kinematic_point": {"rrt_strategy": 0, "best_time": 14.399999999999965, "k": 500, "delta_q": 1}, "differential_drive": {"rrt_strategy": 0, "best_time": 17.399999999999977, "k": 500, "delta_q": 2}, "kinematic_car": {"rrt_strategy": 0, "best_time": -1, "k": 1000, "delta_q": 1}}, "P3": {"dynamic_point": {"rrt_strategy": 0, "best_time": -1, "k": 1000, "delta_q": 1}, "kinematic_point": {"rrt_strategy": 0, "best_time": 77.69999999999986, "k": 1000, "delta_q": 0.8}, "differential_drive": {"rrt_strategy": 0, "best_time": 84.79999999999946, "k": 1000, "delta_q": 0.8}, "kinematic_car": {"rrt_strategy": 0, "best_time": -1, "k": 1000, "delta_q": 1}}, "P2": {"dynamic_point": {"rrt_strategy": 0, "best_time": 8.84999999999999, "k": 500, "delta_q": 0.8}, "kinematic_point": {"rrt_strategy": 0, "best_time": -1, "k": 1000, "delta_q": 1}, "differential_drive": {"rrt_strategy": 0, "best_time": 36.80000000000025, "k": 500, "delta_q": 2}, "kinematic_car": {"rrt_strategy": 0, "best_time": -1, "k": 1000, "delta_q": 1}}}
+{
+	"P1": {
+		"kinematic_point": {
+			"best_time": 14.399999999999965,
+			"delta_q": 1,
+			"k": 500,
+			"rrt_strategy": 0
+		},
+		"dynamic_point": {
+			"best_time": -1,
+			"delta_q": 1,
+			"k": 1000,
+			"rrt_strategy": 0
+		},
+		"differential_drive": {
+			"best_time": 17.399999999999977,
+			"delta_q": 2,
+			"k": 500,
+			"rrt_strategy": 0
+		},
+		"kinematic_car": {
+			"best_time": -1,
+			"delta_q": 1,
+			"k": 1000,
+			"rrt_strategy": 0
+		}
+	},
+	"P2": {
+		"kinematic_point": {
+			"best_time": 32.000000000000185,
+			"delta_q": 0.8,
+			"k": 500,
+			"rrt_strategy": 0
+		},
+		"dynamic_point": {
+			"best_time": -1,
+			"delta_q": 1,
+			"k": 1000,
+			"rrt_strategy": 0
+		},
+		"differential_drive": {
+			"best_time": 34.900000000000226,
+			"delta_q": 1,
+			"k": 1000,
+			"rrt_strategy": 0
+		},
+		"kinematic_car": {
+			"best_time": -1,
+			"delta_q": 1,
+			"k": 1000,
+			"rrt_strategy": 0
+		}
+	},
+	"P3": {
+		"kinematic_point": {
+			"best_time": 77.69999999999986,
+			"delta_q": 0.8,
+			"k": 1000,
+			"rrt_strategy": 0
+		},
+		"dynamic_point": {
+			"best_time": -1,
+			"delta_q": 1,
+			"k": 1000,
+			"rrt_strategy": 0
+		},
+		"differential_drive": {
+			"best_time": 84.79999999999946,
+			"delta_q": 0.8,
+			"k": 1000,
+			"rrt_strategy": 0
+		},
+		"kinematic_car": {
+			"best_time": -1,
+			"delta_q": 1,
+			"k": 1000,
+			"rrt_strategy": 0
+		}
+	}
+}

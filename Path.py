@@ -126,7 +126,8 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False):
             pathLength = circle1.arclength(P1, tang[0][0])
             pathLength += tang[0][0].dist_to(tang[0][1])
             pathLength += circle2.arclength(P2, tang[0][1])
-
+            # Check here for collision !!
+            # check collision on circles and tangents right ?
             if pathLength < bestDist:
                 bestDist = pathLength
                 bestPath = [[P1, circle1.dir], [tang[0][0], 0], [tang[0][1], circle2.dir]]

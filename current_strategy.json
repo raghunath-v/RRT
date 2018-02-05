@@ -1,8 +1,15 @@
 {
+<<<<<<< HEAD
 	"env_name": "P2",
 	"mdl_name": "dynamic_point",
 	"delta_q": 0.8,
 	"k": 500,
+=======
+	"env_name": "P3",
+	"mdl_name": "kinematic_point",
+	"delta_q": 1.0,
+	"k": 2000,
+>>>>>>> some fixes
 	"rrt_strategy": 0
 }
 
