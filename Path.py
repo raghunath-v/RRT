@@ -37,15 +37,15 @@ def get_tangents(Circle1, Circle2):
         C2 = C1
         C1 = temp
         swapped = True
-        #print("Im swapping")
+        print("Im swapping")
 
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
 
     #print(R1, R2)
-    #if(R1 + R2 > d):
-    #   print(R1, R2)
-    #   print(d)
+    if(R1 + R2 > d):
+       print(R1, R2)
+       print(d)
     alpha = math.acos((R1-R2)/d)
     beta = math.acos((R1+R2)/d)
 
@@ -128,6 +128,7 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False):
             pathLength += circle2.arclength(P2, tang[0][1])
             # Check here for collision !!
             # check collision on circles and tangents right ?
+            print(pathLength)
             if pathLength < bestDist:
                 bestDist = pathLength
                 bestPath = [[P1, circle1.dir], [tang[0][0], 0], [tang[0][1], circle2.dir]]
@@ -255,7 +256,17 @@ def create_sling_path(path, vel_series, acc_series):
     return new_path, new_vel_series, new_acc_series
 
 
-if __name__=='__test__': #Test for dynamic
+def shorten_path(path_ser, vel_ser, acc_ser):
+    precision = 0.1
+    new_path_ser = []
+    new_vel_ser = []
+    new_acc_ser = []
+    for i in range(len(path_ser) - 1):
+        pass
+        #new_path_ser
+
+
+if __name__=='__main__': #Test for dynamic
     init = Node(10, 15)
     goal = Node(1, 2)
     v_in = np.array([0.9, -0.2])
@@ -266,6 +277,7 @@ if __name__=='__test__': #Test for dynamic
     canvas_height = 800
     win = GraphWin("area", canvas_width, canvas_height)
     win.yUp()
+
     C1_init, C2_init = getDubinCircles(init, v_in, a_max)
     C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
     dubin_path = getBestDubinPath(init, v_in, a_max, goal, v_fin, a_max)
@@ -287,6 +299,7 @@ if __name__=='__test__': #Test for dynamic
     g.setFill('Red')
     g.draw(win)
 
+    #DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
     dubin_circ = DubinCircle.fromArc(dubin_path[0][0], dubin_path[1][0], dubin_path[0][1])
     g = Circle(dubin_circ.get_scaled_centre(), scale_vectors(dubin_circ.r))
     g.setOutline('Green')
@@ -322,12 +335,12 @@ if __name__=='__test__': #Test for dynamic
     win.close()
 
 
-if __name__=='__main__':  #This works
+if __name__=='__goal__':  #This works
     init = Node(10, 15)
     goal = Node(1, 2)
-    v_in = np.array([-0.9, 0.2])
-    v_fin = np.array([-0.9, -0.2])
-    a_max = 0.2
+    v_in = np.array([0.9, -0.2])
+    v_fin = np.array([0.5, -0.5])
+    a_max = 0.5
 
     canvas_width = 800
     canvas_height = 800
@@ -348,7 +361,6 @@ if __name__=='__main__':  #This works
 
 
     # Draw everything
-
     g = Circle(init.get_scaled_point(), 5)
     g.setOutline('Green')
     g.setFill('Green')

@@ -115,7 +115,7 @@ class DynamicPoint:
         #             (self.pos_y - self.circle.c.y) * sin(self.beta) + self.circle.c.x
         #self.pos_y = (self.pos_x - self.circle.c.x) * sin(self.beta) + \
         #             (self.pos_y - self.circle.c.y) * cos(self.beta) + self.circle.c.y
-        print("beta: ",self.beta,"radius: ",(self.pos_x-self.circle.c.x)**2 + (self.pos_y-self.circle.c.y)**2)
+        #print("beta: ",self.beta,"radius: ",(self.pos_x-self.circle.c.x)**2 + (self.pos_y-self.circle.c.y)**2)
 
         self.current_vel = self.current_vel @ rotation_mat
         angle = math.pi + math.atan2(-self.current_vel[0], self.current_vel[1])

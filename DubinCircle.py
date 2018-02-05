@@ -30,22 +30,24 @@ class DubinCircle:
         self.c = centre
         self.r = radius
         self.dir = direction
+        if radius != abs(1/direction):
+            print("Danger")
 
     @classmethod
     def fromArc(cls, arcpoint1, arcpoint2, steer):
         r = abs(1 / steer)
         sign_posn = get_sign(arcpoint2.x - arcpoint1.x)
-        sign = get_sign(steer)
+        sign = -sign_posn*get_sign(steer)
         side = math.sqrt((arcpoint1.x - arcpoint2.x) ** 2 + (arcpoint1.y - arcpoint2.y) ** 2)
-        new_point = Node((arcpoint1.x+arcpoint2.x)/2, (arcpoint1.y+arcpoint2.y)/2)
+        new_point = Node((arcpoint1.x + arcpoint2.x)/2, (arcpoint1.y + arcpoint2.y)/2)
         bisect = math.sqrt(r**2 - (side/2)**2)
         dx = arcpoint1.x - arcpoint2.x
         dy = arcpoint1.y - arcpoint2.y
         dist = math.sqrt(dx * dx + dy * dy)
         dx /= dist
         dy /= dist
-        x3 = new_point.x + sign_posn*bisect* dy
-        y3 = new_point.y - sign_posn*bisect* dx
+        x3 = new_point.x + sign*bisect* dy
+        y3 = new_point.y - sign*bisect* dx
         c = Node(x3, y3)
 
         return cls(c, r, steer)
