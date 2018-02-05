@@ -216,12 +216,12 @@ def find_acc(u, v, S):
     return acceleration
 
 
-def create_kinematic_sling_path(path, vel_series, turning_radius):
+def create_kinematic_sling_path(path, vel_series, turning_radius, obstacles=None):
     new_path = []
     new_vel_series = []
     for i in range(len(path)-1):
         best_dubin_path = getBestDubinPath(path[i], vel_series[i], turning_radius,
-            path[i+1], vel_series[i+1], turning_radius, kinematic=True)
+            path[i+1], vel_series[i+1], turning_radius, kinematic=True, obstacles=obstacles)
         # Insert new nodes from dubin path
         new_path.append(best_dubin_path[0])     # The starting node in dubin path
         new_path.append(best_dubin_path[1])     # Tangent point T1

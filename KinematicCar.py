@@ -105,7 +105,7 @@ class KinematicCar:
     def add_sling_path(self, goal, obstacles):
          # A path is a list of nodes
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
-        self.sling_path,_ = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius)
+        self.sling_path,_ = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius, obstacles=None)
         self.sling_path = [el for el in reversed(self.sling_path)]
         self.current_action = self.sling_path.pop()
         self.next_action = self.sling_path[-1]
