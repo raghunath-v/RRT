@@ -37,6 +37,7 @@ class DynamicPoint:
         self.vel_arrow = None
         self.acc_arrow = None
         self.win = win
+        self.sling_path_drawables = []
 
         # for actions
         self.current_action = None
@@ -151,10 +152,14 @@ class DynamicPoint:
 
         # Draw the new path
         if self.sling_path_calculated is not None:
-            for action in self.sling_path_calculated:
-                self.body = Circle(action[0].get_scaled_point(), self.body_radius)
-                self.body.setFill('yellow')
-                self.body.draw(self.win)
+            self.sling_path_drawables = [Circle(action[0].get_scaled_point(), self.body_radius) 
+                for action in self.sling_path_calculated]
+            for el in self.sling_path_drawables:
+                el.draw(self.win)
+            #for action in self.sling_path_calculated:
+            #    self.body = Circle(action[0].get_scaled_point(), self.body_radius)
+            #    self.body.setFill('yellow')
+            #    self.body.draw(self.win)
 
         if self.circle is not None:
             dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
