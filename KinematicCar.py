@@ -50,10 +50,10 @@ class KinematicCar:
         return False
 
     def move(self):
-        print(self.pos_x)
         self.pos_x+= self.vel_magnitude*cos(self.theta)*dt
         self.pos_y+= self.vel_magnitude*sin(self.theta)*dt
-        self.theta = (self.vel_magnitude/self.length)*tan(self.phi)
+        # according to the lecture, this is the order of things
+        self.theta+=(self.vel_magnitude/self.length)*tan(self.phi)*dt
         self.set_graphicals()
 
     def set_graphicals(self):
@@ -76,7 +76,7 @@ class KinematicCar:
             self.turning_arrow.undraw()
         self.turning_arrow = Line(
             Point(draw_front_x, draw_front_y),
-            Point(draw_front_x+5*cos(self.phi), draw_front_y+5*sin(self.phi))
+            Point(draw_front_x+5*cos(self.theta + self.phi), draw_front_y+5*sin(self.theta + self.phi))
         )
         self.turning_arrow.setFill('green')
         self.turning_arrow.setArrow('last')
