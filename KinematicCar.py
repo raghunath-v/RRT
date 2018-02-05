@@ -35,8 +35,14 @@ class KinematicCar:
         self.sling_path = None
         self.sling_path_calculated = None
         self.sling_vel = None
-        self.sling_acc = None
         self.total_time = 0
+
+        # for circle/arc parameters
+        self.theta = 0
+        self.T = 0
+        self.n = 0
+        self.beta = 0
+        self.circle = None
 
         # graphics related
         self.body_back = None # the actual position
@@ -58,7 +64,33 @@ class KinematicCar:
             while taking into consderation the constraints of 
             max_phi and max_velocity
         '''
-        self.move()
+        # check if we have reached the next node
+        if self.pos_x == self.sling_path[-1][0].x and self.pos_y == self.sling_path[-1][0].y or self.n == 0:
+            # we have reached the next one, but is it
+            # the goal node?
+            if (len(self.sling_path) == 1):
+                self.finished = True
+                return
+            else:
+                self.current_action = self.sling_path.pop()
+                self.current_vel = self.sling_vel.pop()
+                self.new_action = True
+
+        # are we going into a circle?
+        if (self.current_action[1] != 0):
+            if self.new_action:
+                #self.set_circle_params()
+                self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
+                self.T = self.circle.arclength(self.current_action[0], self.sling_path[-1][0]) / \
+                         math.sqrt(np.dot(self.current_vel, self.current_vel))
+                self.theta = self.circle.arcangle(self.current_action[0], self.sling_path[-1][0])
+                self.n = math.floor(self.T / self.dt)
+                self.beta = self.theta / self.n
+                self.new_action = False
+            self.move_circular()
+        else:
+            # we are moving straight
+            self.move()
 
     def move(self):
         self.pos_x+= self.vel_magnitude*cos(self.theta)*self.dt
@@ -66,6 +98,23 @@ class KinematicCar:
         # according to the lecture, this is the order of things
         self.theta+=(self.vel_magnitude/self.length)*tan(self.phi)*self.dt
         self.set_graphicals()
+
+    def move_circular(self):
+        angle = atan(-self.current_vel[0] / self.current_vel[1])
+        #self.current_acc[0] = self.acc_max * cos(angle)
+        #self.current_acc[1] = self.acc_max * sin(angle)
+        rotation_mat = np.array([[cos(self.beta), sin(self.beta)],
+                                [-sin(self.beta), cos(self.beta)]])
+        self.current_vel = self.current_vel @ rotation_mat
+
+        self.pos_x = (self.pos_x - self.circle.c.x) * cos(self.beta) - (self.pos_y - self.circle.c.y) * sin(
+            self.beta) + self.circle.c.x
+        self.pos_y = (self.pos_x - self.circle.c.x) * sin(self.beta) + (self.pos_y - self.circle.c.y) * cos(
+            self.beta) + self.circle.c.y
+
+        self.n -= 1
+        self.set_graphicals()
+
 
     def add_path(self, path):
         self.path = path
@@ -107,6 +156,10 @@ class KinematicCar:
         self.turning_arrow.draw(self.win)
         
         # Sling path related plotting
+        if self.circle is not None:
+            dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
+            dubinc.setOutline('Green')
+            dubinc.draw(self.win)
 
         if self.sling_path_calculated is not None:
             self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
