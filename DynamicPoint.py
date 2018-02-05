@@ -45,7 +45,7 @@ class DynamicPoint:
         self.current_vel = np.array(vel_start, dtype=float)
         self.new_action = True   #Flag if new action is received
         self.arc_length = 0
-        self.precision = 0.3
+        self.precision = 0.4
         self.position_error = 0
 
         # for circle/arc parameters
@@ -57,11 +57,10 @@ class DynamicPoint:
 
     def set_velocity(self, goal):
         self.total_time += self.dt
-        print(self.pos_x, self.total_time)
         # check if we have reached the next node
         self.position_error = math.sqrt((self.pos_x - self.sling_path[-1][0].x)**2 + (self.pos_y - self.sling_path[-1][0].y)**2)
-        print(self.position_error, self.n)
-        if self.position_error < self.precision or self.n == 0:
+        #print(self.position_error, self.n)
+        if self.position_error < self.precision or self.n < 0:
             # we have reached the next one, but is it
             # the goal node?
 
@@ -75,7 +74,7 @@ class DynamicPoint:
                 #TODO Setting velocity to dirct to the next point
                 if self.current_action[1] == 0:
                     direc = math.atan((self.sling_path[-1][0].y-self.pos_y)/(self.sling_path[-1][0].x-self.pos_x))
-                    vel_mag = math.sqrt(np.dot(self.current_vel,self.current_vel))
+                    vel_mag = math.sqrt(np.dot(self.current_vel, self.current_vel))
                     self.current_vel[0] = vel_mag * math.cos(direc)
                     self.current_vel[1] = vel_mag * math.sin(direc)
 
@@ -93,8 +92,8 @@ class DynamicPoint:
                 self.theta = self.circle.arcangle(self.current_action[0], self.sling_path[-1][0])
                 if self.theta<0:
                     self.theta = 2*math.pi + self.theta
-                print("theta:", self.theta)
-                self.n = math.ceil(self.T / self.dt)
+                #print("theta:", self.theta)
+                self.n = self.T / self.dt
                 self.beta = self.theta / self.n
                 self.new_action = False
             self.move_circular()
@@ -106,23 +105,29 @@ class DynamicPoint:
 
     def move_circular(self):
         # TODO: sign fix
+        rotation_mat = np.array([[cos(self.beta), sin(self.beta)],
+                                 [-sin(self.beta), cos(self.beta)]])
+        position_vect = np.array([self.pos_x - self.circle.c.x, self.pos_y - self.circle.c.y])
+        position_vect = position_vect @ rotation_mat
+        self.pos_x = position_vect[0] + self.circle.c.x
+        self.pos_y = position_vect[1] + self.circle.c.y
+        #self.pos_x = (self.pos_x - self.circle.c.x) * cos(self.beta) - \
+        #             (self.pos_y - self.circle.c.y) * sin(self.beta) + self.circle.c.x
+        #self.pos_y = (self.pos_x - self.circle.c.x) * sin(self.beta) + \
+        #             (self.pos_y - self.circle.c.y) * cos(self.beta) + self.circle.c.y
+        print("beta: ",self.beta,"radius: ",(self.pos_x-self.circle.c.x)**2 + (self.pos_y-self.circle.c.y)**2)
+
+        self.current_vel = self.current_vel @ rotation_mat
         angle = math.pi + math.atan2(-self.current_vel[0], self.current_vel[1])
+
         self.current_acc[0] = self.acc_max * cos(angle)
         self.current_acc[1] = self.acc_max * sin(angle)
-        rotation_mat = np.array([[cos(self.beta), sin(self.beta)],
-                                [-sin(self.beta), cos(self.beta)]])
-        self.current_vel = self.current_vel @ rotation_mat
-
-        self.pos_x = (self.pos_x - self.circle.c.x) * cos(self.beta) - (self.pos_y - self.circle.c.y) * sin(
-            self.beta) + self.circle.c.x
-        self.pos_y = (self.pos_x - self.circle.c.x) * sin(self.beta) + (self.pos_y - self.circle.c.y) * cos(
-            self.beta) + self.circle.c.y
 
         self.n -= 1
         self.set_graphicals()
 
     def move(self):
-        print(self.current_vel)
+        #print(self.current_vel)
         angle = atan(self.current_vel[1] / self.current_vel[0])
         self.current_acc[0] = self.acc_max * cos(angle)
         self.current_acc[1] = self.acc_max * sin(angle)
@@ -155,7 +160,7 @@ class DynamicPoint:
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
-
+        #print((self.pos_x, self.pos_x), self.total_time)
         # Draw the new path
         if self.sling_path_calculated is not None:
             self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
