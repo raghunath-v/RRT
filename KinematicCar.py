@@ -58,6 +58,7 @@ class KinematicCar:
             while taking into consderation the constraints of 
             max_phi and max_velocity
         '''
+        self.move()
 
     def move(self):
         self.pos_x+= self.vel_magnitude*cos(self.theta)*self.dt
@@ -74,6 +75,7 @@ class KinematicCar:
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
         self.sling_path, self.sling_vel = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius)
         self.sling_path_calculated = self.sling_path
+        print(self.sling_path_calculated)
         self.node_count_sling = len(self.sling_path)
         self.sling_path = [el for el in reversed(self.sling_path)]
         self.sling_vel = [el for el in reversed(self.sling_vel)]
@@ -110,4 +112,5 @@ class KinematicCar:
             self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
                 for action in self.sling_path_calculated]
             for el in self.sling_path_drawables:
+                print(el)
                 el.draw(self.win)
