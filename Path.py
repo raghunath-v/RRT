@@ -37,7 +37,7 @@ def get_tangents(Circle1, Circle2):
         C2 = C1
         C1 = temp
         swapped = True
-        print("Im swapping")
+        #print("Im swapping")
 
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
@@ -61,17 +61,17 @@ def get_tangents(Circle1, Circle2):
 
     if check_swap and swapped:
         if (dir1 < 0 and dir2 < 0):
-            print("Tan1")
+            #print("Tan1")
             tangents.append((T1_2, T1_1))
         if (dir1 > 0 and dir2 > 0):
-            print("Tan2")
+            #print("Tan2")
             tangents.append((T2_2, T2_1))
     else:
         if (dir1 > 0 and dir2 > 0):
-            print("Tan3")
+            #print("Tan3")
             tangents.append((T1_1, T1_2))
         if (dir1 < 0 and dir2 < 0):
-            print("Tan4")
+            #print("Tan4")
             tangents.append((T2_1, T2_2))
 
     #Inner tangents
@@ -86,17 +86,17 @@ def get_tangents(Circle1, Circle2):
 
     if check_swap and swapped:
         if (dir1 > 0 and dir2 < 0):
-            print("Tan5")
+            #print("Tan5")
             tangents.append((T1_2, T1_1))
         if (dir1 < 0 and dir2 > 0):
-            print("Tan6")
+            #print("Tan6")
             tangents.append((T2_2, T2_1))
     else:
         if (dir1 > 0 and dir2 < 0):
-            print("Tan7")
+            #print("Tan7")
             tangents.append((T1_1, T1_2))
         if (dir1 < 0 and dir2 > 0):
-            print("Tan8")
+            #print("Tan8")
             tangents.append((T2_1, T2_2))
 
     return tangents
