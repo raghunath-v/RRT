@@ -112,12 +112,27 @@ def get_velocity_at_circle(start_pos, start_vel, steer, final_pos):
     return new_vel
 
 
-def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False):
+def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False, obstacles=None, bounding_area=None):
     #paths=['RSR', 'LSL', 'RSL', 'LSR']
-
     C1_1, C2_1 = getDubinCircles(P1, V1, A1, kinematic=kinematic)
     C1_2, C2_2 = getDubinCircles(P2, V2, A2, kinematic=kinematic)
-
+    '''
+    For some reason, no circle will pass this collision test
+    C_1 = []
+    C_2 = []
+    c11 = False
+    c21 = False
+    c12 = False
+    c22 = False
+    for obs in obstacles:
+        c11 = c11 or obs.intersects_with_circle(C1_1.c.x, C1_1.c.y, C1_1.r)
+        c21 = c21 or obs.intersects_with_circle(C2_1.c.x, C2_1.c.y, C2_1.r)
+        c12 = c12 or obs.intersects_with_circle(C1_2.c.x, C1_2.c.y, C1_2.r)
+        c22 = c22 or obs.intersects_with_circle(C2_2.c.x, C2_2.c.y, C2_2.r)
+    '''
+    # throw out bad circles
+    # currently we disregard any circle that is intersecting with
+    # bounding area or any obstacle
     bestPath = []
     bestDist = math.inf
     for circle1 in [C1_1, C2_1]:
@@ -125,14 +140,26 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False):
             tang = get_tangents(circle1, circle2)
             pathLength = circle1.arclength(P1, tang[0][0])
             pathLength += tang[0][0].dist_to(tang[0][1])
+<<<<<<< HEAD
             pathLength += circle2.arclength(tang[0][1], P2)
             # Check here for collision !!
             # check collision on circles and tangents right ?
 
             if pathLength < bestDist:
+=======
+            pathLength += circle2.arclength(P2, tang[0][1])
+            # check first of tangents intersect with obstacles
+            intersect = False
+            if obstacles is not None:
+                for obs in obstacles:
+                    if obs.intersects_with_segment(tang[0][0].x, tang[0][0].y, tang[0][1].x, tang[0][1].y):
+                        intersect=True
+            # check here for circle intersection
+            # check collision on circles and tangents right
+            if pathLength < bestDist and not intersect:
+>>>>>>> dcfa32d84394be38f52fb16e7cc1e32e758dcfe2
                 bestDist = pathLength
                 bestPath = [[P1, circle1.dir], [tang[0][0], 0], [tang[0][1], circle2.dir]]
-
     return bestPath
 
 def getDubinCircles(node, vel, acc, kinematic=False):
@@ -208,7 +235,7 @@ def create_kinematic_sling_path(path, vel_series, turning_radius):
     new_vel_series.append(vel_series[len(path) - 1])
     return new_path, new_vel_series
 
-def create_sling_path(path, vel_series, acc_series):
+def create_sling_path(path, vel_series, acc_series, obstacles=None):
     #get_velocity_series(path, vel_start, vel_goal)
     #get_acceleration_series(path, acc_max)
     new_path = []
@@ -216,7 +243,7 @@ def create_sling_path(path, vel_series, acc_series):
     new_acc_series = []
     for i in range(len(path)-1):
         best_dubin_path = getBestDubinPath(path[i], vel_series[i], acc_series[i],
-                         path[i+1], vel_series[i+1], acc_series[i+1])
+                         path[i+1], vel_series[i+1], acc_series[i+1], obstacles=obstacles)
 
         # Insert new nodes from dubin path
         new_path.append(best_dubin_path[0])     # The starting node in dubin path

@@ -12,7 +12,7 @@ from BoundingArea import BoundingArea
 from Goal import Goal
 from g_tools import emit_verbose
 class RRT:
-    def __init__(self, bounding_area, obstacles, player, goal, rrt_setup, win, verbose=True):
+    def __init__(self, bounding_area, obstacles, player, goal, rrt_setup, win, goal_rate=3, lower_k = None, verbose=True):
         # related to the program at a whole
         self.win = win
         self.drawables = None
@@ -21,6 +21,8 @@ class RRT:
         self.obstacles = obstacles
         self.player = player
         self.goal = goal
+        self.goal_rate = goal_rate
+        self.lower_k = lower_k
         # regarding the graph part
         self.graph = defaultdict(set)
         # Relating specifically to RRT
@@ -57,7 +59,8 @@ class RRT:
         self.closest_to_goal = self.start_node
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         k=0
-        while not self.is_path_to_goal() and k < self.K:
+        self.lower_k = 500
+        while (not self.is_path_to_goal() and k < self.K):
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):
                 q_rand = self.gen_random_node()
@@ -149,7 +152,43 @@ class RRT:
                     node_idx = next_idx + 1
                     has_found = False
         emit_verbose("Optimizing path took", self.verbose, var=time.time()-t)
-      
+        self.re_optimize_path()
+    
+    def re_optimize_path(self):
+        # Iterate over all edges in path
+        # and check if they can be removed
+        # without any collision
+        re_optimal_path = [self.optimal_path[0]]
+        finished = False
+        node_idx = 1
+        has_found = False
+        next_segment = None
+        t = time.time()
+        while not finished:
+            if node_idx >= len(self.optimal_path):
+                if(next_segment is not None):
+                    re_optimal_path.append(next_segment)
+                    finished = True
+                    break
+                else:
+                    print('Too few nodes, k too low or no valid way to goal')
+                    print('Optimal path: ', re_optimal_path)
+                    sys.exit(0)
+            if self.is_segment_valid(re_optimal_path[-1], self.optimal_path[node_idx]):
+                has_found = True
+                next_segment = self.optimal_path[node_idx]
+                next_idx = node_idx
+                node_idx+=1
+            else:
+                if not has_found:
+                    re_optimal_path.append(self.optimal_path[node_idx])
+                    node_idx+=1
+                else:
+                    re_optimal_path.append(next_segment)
+                    node_idx = next_idx + 1
+                    has_found = False
+        emit_verbose("Optimizing path took", self.verbose, var=time.time()-t)
+        self.optimal_path = re_optimal_path
     def get_path(self):
         return self.path
 
@@ -301,7 +340,7 @@ class RRT:
     # A random node (with bias) is generated,
     # it is not neceserally a legal node
     def gen_random_node(self):
-        if random.randint(0, 5) == 0:
+        if random.randint(0, self.goal_rate) == 0:
             return Node(self.goal.pos_x, self.goal.pos_y)
         else:
             return Node(random.uniform(self.min_x, self.max_x), random.uniform(self.min_x, self.max_x))
@@ -338,9 +377,10 @@ class RRT:
             for i in range(0,len(self.optimal_path)-1):
                 node_1 = self.optimal_path[i]
                 node_2 = self.optimal_path[i+1]
-                cir = Circle(node_1.get_scaled_point(), 2)
+                cir = Circle(node_1.get_scaled_point(), 5)
                 cir.setFill('Blue')
                 cir.setOutline('Blue')
+                cir.draw(self.win)
                 self.drawable_path.append(cir)
                 lin = Line(node_1.get_scaled_point(), node_2.get_scaled_point())
                 lin.setOutline('Blue')

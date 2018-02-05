@@ -84,6 +84,12 @@ def segments_intersect(ax, ay, bx, by, s):
         [cy-by, dy-by]]))
     return a*c < 0 and b*d < 0
 
+def segment_intersects_circle(x_0, y_0, r, s):
+    x_1,y_1 = s[0][0], s[0][1]
+    x_2,y_2 = s[1][0], s[1][1]
+    return abs( (x_2-x_1)*x_0 + (y_1-y_2)*y_0 + (x_1-x_2)*y_1 + x_1*(y_2-y_1) )/\
+        math.sqrt((x_2 - x_1)**2 + (y_1 - y_2)**2) <= r
+
 def emit_verbose(string, verbose, var=None):
     if verbose:
         if var:

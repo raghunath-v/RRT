@@ -9,6 +9,7 @@ class Node:
         self.y = loc_y
         self.parent = None
         self.goal_dist = 0
+        self.has_path_to_goal = False
 
     def set_start_dist(self, dist):
         self.goal_dist = dist
@@ -43,4 +44,4 @@ class Node:
         return (node.y - self.y) / (node.x - self.x)
 
     def __repr__(self):
-        return "( " + str(self.x) + ", " + str(self.y) + " ), parent:"+str(self.parent)
+        return "Node:( " + str(self.x) + ", " + str(self.y) + " )"

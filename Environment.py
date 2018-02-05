@@ -38,7 +38,7 @@ class Environment:
         self.rrt.generate()
         self.player.add_path(self.rrt.optimal_path)
         if isinstance(self.player, DynamicPoint) or isinstance(self.player, KinematicCar):
-            self.player.add_sling_path(self.goal)
+            self.player.add_sling_path(self.goal, self.obstacles)
         self.rrt.set_graphicals(self.quick_draw)
         #self.rrt.remove_graphicals()
 
@@ -54,10 +54,13 @@ class Environment:
         print("player: ", self.player.pos_x,",",self.player.pos_y)
         print("Velocity:")
         print("goal: ", self.goal.vel_x,",",self.goal.vel_y)
-        print("player: ", self.player.current_vel[0],",",self.player.current_vel[1])
+        if isinstance(self.player, DynamicPoint):
+            print("player: ", self.player.current_vel[0],",",self.player.current_vel[1])
+        else:
+            print("player: ", self.player.vel_x,",",self.player.vel_y)
         print("Time taken to reach goal (sec): ", player.total_time)
         # comment line below to record time
-        #self.win.getMouse()
+        self.win.getMouse()
         self.win.close()
         return player.total_time
     

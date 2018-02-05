@@ -1,8 +1,8 @@
 {
-	"env_name": "P2",
-	"mdl_name": "dynamic_point",
+	"env_name": "P1",
+	"mdl_name": "kinematic_car",
 	"delta_q": 0.8,
-	"k": 500,
+	"k": 400,
 	"rrt_strategy": 0
 }
 

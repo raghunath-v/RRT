@@ -10,8 +10,8 @@ class KinematicCar:
         # gives radius:  L/tan(max_phi)
 
         # dynamics related
-        vel_x = vel_start[0]
-        vel_y = vel_start[1]
+        self.vel_x = vel_start[0]
+        self.vel_y = vel_start[1]
         self.vel_start = vel_start
         self.vel_max = vel_max
         self.pos_x = pos_start[0]
@@ -22,12 +22,12 @@ class KinematicCar:
         # Specific to differential drive
         self.phi_max = phi_max
         self.length = length
-        self.theta = atan(vel_y/vel_x)
+        self.theta = atan(self.vel_y/self.vel_x)
         self.max_turn_radius = self.length/tan(self.phi_max) 
         # makes sense to me to set turning to 0 in refernece
         # to itself initially instead of an arbitrary 0 
-        self.phi = self.theta
-        self.vel_magnitude = sqrt(vel_x**2 + vel_y**2)
+        self.phi = 0
+        self.vel_magnitude = sqrt(self.vel_x**2 + self.vel_y**2)
         
         # path planning related
         self.path = None
@@ -38,7 +38,8 @@ class KinematicCar:
         self.total_time = 0
 
         # for circle/arc parameters
-        self.theta = 0
+        # set to equate initial velocity
+        #self.theta = 0
         self.T = 0
         self.n = 0
         self.beta = 0
@@ -53,80 +54,66 @@ class KinematicCar:
         self.body_back_radius = 10
         self.body_front_radius = 5
         self.win = win
+
+        self.tolerance = self.vel_max*self.dt
+        self.current_action = None
+        self.next_action = None
         
     def set_velocity(self, goal):
-        '''
-            Change stuff here. Like I understand it,
-            the velocity should be considered a scalar
-            while theta, which is determined by phi, should
-            control the direction of the vehicle. So here we
-            can change the velocity scalar and the current phi
-            while taking into consderation the constraints of 
-            max_phi and max_velocity
-        '''
-        # check if we have reached the next node
-        if self.pos_x == self.sling_path[-1][0].x and self.pos_y == self.sling_path[-1][0].y or self.n == 0:
-            # we have reached the next one, but is it
-            # the goal node?
-            if (len(self.sling_path) == 1):
+        self.total_time+=self.dt
+        if (abs(self.pos_x - self.next_action[0].x) < self.tolerance) and (abs(self.pos_y - self.next_action[0].y) < self.tolerance):
+            self.pos_x = self.next_action[0].x
+            self.pos_y = self.next_action[0].y
+            self.current_action = self.sling_path.pop()
+            if len(self.sling_path) == 0:
+                # we are done
                 self.finished = True
+                # TODO : This is a little bit of a cheat, it set's 
+                # theta and phi to match up with goal at the end
+                # it would be better to correct phi or something at
+                # the end
+                self.theta = atan(goal.vel_y/goal.vel_x)
+                self.phi = 0
+                self.set_graphicals()
                 return
-            else:
-                self.current_action = self.sling_path.pop()
-                self.current_vel = self.sling_vel.pop()
-                self.new_action = True
-
-        # are we going into a circle?
-        if (self.current_action[1] != 0):
-            if self.new_action:
-                #self.set_circle_params()
+            self.next_action = self.sling_path[-1]
+            if(self.current_action[1] !=0):
                 self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
-                self.T = self.circle.arclength(self.current_action[0], self.sling_path[-1][0]) / \
-                         math.sqrt(np.dot(self.current_vel, self.current_vel))
-                self.theta = self.circle.arcangle(self.current_action[0], self.sling_path[-1][0])
-                self.n = math.floor(self.T / self.dt)
-                self.beta = self.theta / self.n
-                self.new_action = False
-            self.move_circular()
+            else:
+                self.theta = atan((self.pos_y-self.next_action[0].y)/(self.pos_x-self.next_action[0].x))
         else:
-            # we are moving straight
-            self.move()
+            # keep doing the current action
+            if self.current_action[1] != 0:
+                self.move(rot=True)
+            else:
+                self.move()
 
-    def move(self):
+    def move(self, rot=False):
+        if rot:
+            self.phi = self.phi_max
+        else:
+            self.phi = 0
         self.pos_x+= self.vel_magnitude*cos(self.theta)*self.dt
         self.pos_y+= self.vel_magnitude*sin(self.theta)*self.dt
         # according to the lecture, this is the order of things
-        self.theta+=(self.vel_magnitude/self.length)*tan(self.phi)*self.dt
+        self.theta += (self.vel_magnitude/self.length)*tan(self.phi)*self.dt
         self.set_graphicals()
-
-    def move_circular(self):
-        angle = atan(-self.current_vel[0] / self.current_vel[1])
-        #self.current_acc[0] = self.acc_max * cos(angle)
-        #self.current_acc[1] = self.acc_max * sin(angle)
-        rotation_mat = np.array([[cos(self.beta), sin(self.beta)],
-                                [-sin(self.beta), cos(self.beta)]])
-        self.current_vel = self.current_vel @ rotation_mat
-
-        self.pos_x = (self.pos_x - self.circle.c.x) * cos(self.beta) - (self.pos_y - self.circle.c.y) * sin(
-            self.beta) + self.circle.c.x
-        self.pos_y = (self.pos_x - self.circle.c.x) * sin(self.beta) + (self.pos_y - self.circle.c.y) * cos(
-            self.beta) + self.circle.c.y
-
-        self.n -= 1
-        self.set_graphicals()
-
 
     def add_path(self, path):
         self.path = path
 
-    def add_sling_path(self, goal):
+    def add_sling_path(self, goal, obstacles):
          # A path is a list of nodes
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
-        self.sling_path, self.sling_vel = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius)
-        self.sling_path_calculated = self.sling_path
-        self.node_count_sling = len(self.sling_path)
+        self.sling_path,_ = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius)
         self.sling_path = [el for el in reversed(self.sling_path)]
-        self.sling_vel = [el for el in reversed(self.sling_vel)]
+        self.current_action = self.sling_path.pop()
+        self.next_action = self.sling_path[-1]
+        self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
+        # draw once
+        for el in self.sling_path:
+            cir = Circle(el[0].get_scaled_point(), 3)
+            cir.draw(self.win)
 
     def set_graphicals(self):
         draw_back_x = g.scale(self.pos_x)
@@ -148,7 +135,7 @@ class KinematicCar:
             self.turning_arrow.undraw()
         self.turning_arrow = Line(
             Point(draw_front_x, draw_front_y),
-            Point(draw_front_x+5*cos(self.theta + self.phi), draw_front_y+5*sin(self.theta + self.phi))
+            Point(draw_front_x+20*cos(self.theta + self.phi), draw_front_y+20*sin(self.theta + self.phi))
         )
         self.turning_arrow.setFill('green')
         self.turning_arrow.setArrow('last')
@@ -159,9 +146,3 @@ class KinematicCar:
             dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
             dubinc.setOutline('Green')
             dubinc.draw(self.win)
-
-        if self.sling_path_calculated is not None:
-            self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
-                for action in self.sling_path_calculated]
-            for el in self.sling_path_drawables:
-                el.draw(self.win)
