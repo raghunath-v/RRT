@@ -86,13 +86,14 @@ class DynamicPoint:
         if (self.current_action[1] != 0):
             if self.new_action:
                 #self.set_circle_params()
-                self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
+                #self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
+                self.circle = DubinCircle.fromVel(self.current_action[0], self.current_action[1], self.current_vel)
                 self.T = self.circle.arclength(self.current_action[0], self.sling_path[-1][0]) / \
                          math.sqrt(np.dot(self.current_vel, self.current_vel))
                 self.theta = self.circle.arcangle(self.current_action[0], self.sling_path[-1][0])
                 if self.theta<0:
                     self.theta = 2*math.pi + self.theta
-                #print("theta:", self.theta)
+                print("theta:", self.theta)
                 self.n = self.T / self.dt
                 self.beta = self.theta / self.n
                 self.new_action = False
@@ -118,7 +119,7 @@ class DynamicPoint:
         #print("beta: ",self.beta,"radius: ",(self.pos_x-self.circle.c.x)**2 + (self.pos_y-self.circle.c.y)**2)
 
         self.current_vel = self.current_vel @ rotation_mat
-        angle = math.pi + math.atan2(-self.current_vel[0], self.current_vel[1])
+        angle = math.atan2(-self.current_vel[0], self.current_vel[1])
 
         self.current_acc[0] = self.acc_max * cos(angle)
         self.current_acc[1] = self.acc_max * sin(angle)

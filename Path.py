@@ -125,10 +125,10 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False):
             tang = get_tangents(circle1, circle2)
             pathLength = circle1.arclength(P1, tang[0][0])
             pathLength += tang[0][0].dist_to(tang[0][1])
-            pathLength += circle2.arclength(P2, tang[0][1])
+            pathLength += circle2.arclength(tang[0][1], P2)
             # Check here for collision !!
             # check collision on circles and tangents right ?
-            print(pathLength)
+
             if pathLength < bestDist:
                 bestDist = pathLength
                 bestPath = [[P1, circle1.dir], [tang[0][0], 0], [tang[0][1], circle2.dir]]
@@ -253,25 +253,38 @@ def create_sling_path(path, vel_series, acc_series):
     new_path.append([path[len(path) - 1], 0])
     new_vel_series.append(vel_series[len(path) - 1])
     new_acc_series.append(acc_series[len(path) - 1])
-    return new_path, new_vel_series, new_acc_series
+
+    return ignore_silly_nodes(new_path, new_vel_series, new_acc_series)
 
 
-def shorten_path(path_ser, vel_ser, acc_ser):
-    precision = 0.1
+def ignore_silly_nodes(path_ser, vel_ser, acc_ser):
+    precision = 0.25
+    add_entry = True
     new_path_ser = []
     new_vel_ser = []
     new_acc_ser = []
     for i in range(len(path_ser) - 1):
-        pass
-        #new_path_ser
+        if path_ser[i][1] != 0:
+            if path_ser[i][0].dist_to(path_ser[i+1][0]) < precision:
+                add_entry = False
+                #path_ser[i][1] = path_ser[i+1][1]
+        if add_entry == True:
+            new_path_ser.append(path_ser[i])
+            new_vel_ser.append(vel_ser[i])
+            new_acc_ser.append(acc_ser[i])
+        add_entry = True
+    new_path_ser.append(path_ser[len(path_ser) - 1])
+    new_vel_ser.append(vel_ser[len(path_ser) - 1])
+    new_acc_ser.append(acc_ser[len(path_ser) - 1])
+    return new_path_ser, new_vel_ser, new_acc_ser
 
 
 if __name__=='__main__': #Test for dynamic
-    init = Node(10, 15)
-    goal = Node(1, 2)
+    goal = Node(10, 15)
+    init = Node(1, 2)
     v_in = np.array([0.9, -0.2])
     v_fin = np.array([0.5, -0.5])
-    a_max = 0.5
+    a_max = 0.3
 
     canvas_width = 800
     canvas_height = 800
@@ -300,14 +313,16 @@ if __name__=='__main__': #Test for dynamic
     g.draw(win)
 
     #DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
-    dubin_circ = DubinCircle.fromArc(dubin_path[0][0], dubin_path[1][0], dubin_path[0][1])
+    #dubin_circ = DubinCircle.fromArc(dubin_path[0][0], dubin_path[1][0], dubin_path[0][1])  #TODO: This will not work
+    dubin_circ = DubinCircle.fromVel(dubin_path[0][0], dubin_path[0][1], v_in)
     g = Circle(dubin_circ.get_scaled_centre(), scale_vectors(dubin_circ.r))
     g.setOutline('Green')
     g.draw(win)
-
-    dubin_circ = DubinCircle.fromArc(dubin_path[2][0], goal, dubin_path[2][1])
+    #print("Goal steer: ", dubin_path[2][1])
+    #dubin_circ = DubinCircle.fromArc(dubin_path[2][0], goal, dubin_path[2][1])      #TODO: This will not work
+    dubin_circ = DubinCircle.fromVel(goal, dubin_path[2][1], v_fin)
     g = Circle(dubin_circ.get_scaled_centre(), scale_vectors(dubin_circ.r))
-    g.setOutline('Green')
+    g.setOutline('Red')
     g.draw(win)
 
     g = Circle(dubin_path[1][0].get_scaled_point(), 5)
@@ -335,30 +350,44 @@ if __name__=='__main__': #Test for dynamic
     win.close()
 
 
-if __name__=='__goal__':  #This works
-    init = Node(10, 15)
-    goal = Node(1, 2)
+if __name__=='__test__':  #This works
+    goal = Node(10, 15)
+    init = Node(1, 2)
     v_in = np.array([0.9, -0.2])
     v_fin = np.array([0.5, -0.5])
-    a_max = 0.5
+    a_max = 0.3
 
     canvas_width = 800
     canvas_height = 800
     win = GraphWin("area", canvas_width, canvas_height)
     win.yUp()
 
-    C1_init, C2_init = getDubinCircles(init, v_in, a_max)
-    C1_goal, C2_goal = getDubinCircles(goal, v_fin, a_max)
+    C1_i, C2_i = getDubinCircles(init, v_in, a_max)
+    C1_g, C2_g = getDubinCircles(goal, v_fin, a_max)
 
     #dubin_path = getBestDubinPath(init, v_in, a_max, goal, v_fin, a_max)
 
     #print(C1_init.get_dir(), C1_goal.get_dir())
     tangents = []
-    for circ1 in [C1_init, C2_init]:
-        for circ2 in [C1_goal, C2_goal]:
+    for circ1 in [C1_i, C2_i]:
+        for circ2 in [C1_g, C2_g]:
             tan = get_tangents(circ1, circ2)
             tangents.append((tan[0][0], tan[0][1]))
 
+    steer1 = C1_i.dir
+    steer2 = C1_g.dir
+    print(steer1)
+    print(steer2)
+
+    #C1_init = DubinCircle.fromArc(init, tangents[0][0], steer1)
+    #C2_init = DubinCircle.fromArc(init, tangents[2][0], -steer1)
+    #C1_goal = DubinCircle.fromArc(goal, tangents[0][1], steer2)
+    #C2_goal = DubinCircle.fromArc(goal, tangents[1][1], -steer2)
+
+    C1_init = DubinCircle.fromVel(init, steer1, v_in)
+    C2_init = DubinCircle.fromVel(init, -steer1, v_in)
+    C1_goal = DubinCircle.fromVel(goal, steer2, v_fin)
+    C2_goal = DubinCircle.fromVel(goal, -steer2, v_fin)
 
     # Draw everything
     g = Circle(init.get_scaled_point(), 5)
@@ -368,12 +397,10 @@ if __name__=='__goal__':  #This works
 
     g = Circle(C1_init.get_scaled_centre(), scale_vectors(C1_init.r))
     g.setOutline('Green')
-    #g.setFill('Black')
     g.draw(win)
 
     g = Circle(C2_init.get_scaled_centre(), scale_vectors(C2_init.r))
     g.setOutline('Green')
-    #g.setFill('Black')
     g.draw(win)
 
     g = Circle(goal.get_scaled_point(), 5)
@@ -383,12 +410,10 @@ if __name__=='__goal__':  #This works
 
     g = Circle(C1_goal.get_scaled_centre(), scale_vectors(C1_goal.r))
     g.setOutline('Black')
-    #g.setFill('Red')
     g.draw(win)
 
     g = Circle(C2_goal.get_scaled_centre(), scale_vectors(C2_goal.r))
     g.setOutline('Black')
-    #g.setFill('Red')
     g.draw(win)
 
 
@@ -407,9 +432,9 @@ if __name__=='__goal__':  #This works
         Line(tan[0].get_scaled_point(), tan[1].get_scaled_point()).draw(win)
 
     #Draw velocity vectors
-    new = Node(init.x + v_in[0], init.y + v_in[1])
+    new = Node(init.x + (v_in[0]*3), init.y + (v_in[1]*3))
     Line(init.get_scaled_point(), new.get_scaled_point()).draw(win)
-    new = Node(goal.x + v_fin[0], goal.y + v_fin[1])
+    new = Node(goal.x + (v_fin[0]*3), goal.y + (v_fin[1]*3))
     Line(goal.get_scaled_point(), new.get_scaled_point()).draw(win)
 
     win.getMouse()

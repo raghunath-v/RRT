@@ -36,22 +36,43 @@ class DubinCircle:
     @classmethod
     def fromArc(cls, arcpoint1, arcpoint2, steer):
         r = abs(1 / steer)
-        sign_posn = get_sign(arcpoint2.x - arcpoint1.x)
-        sign = -sign_posn*get_sign(steer)
+
+        sign = get_sign(steer)
         side = math.sqrt((arcpoint1.x - arcpoint2.x) ** 2 + (arcpoint1.y - arcpoint2.y) ** 2)
         new_point = Node((arcpoint1.x + arcpoint2.x)/2, (arcpoint1.y + arcpoint2.y)/2)
         bisect = math.sqrt(r**2 - (side/2)**2)
         dx = arcpoint1.x - arcpoint2.x
         dy = arcpoint1.y - arcpoint2.y
+        slope_sign = get_sign(dy/dx)
         dist = math.sqrt(dx * dx + dy * dy)
         dx /= dist
         dy /= dist
-        x3 = new_point.x + sign*bisect* dy
-        y3 = new_point.y - sign*bisect* dx
+        x3 = new_point.x + slope_sign*bisect*dy
+        y3 = new_point.y - slope_sign*bisect*dx
         c = Node(x3, y3)
 
         return cls(c, r, steer)
 
+    @classmethod
+    def fromVel(cls, arcpoint1, steer, vel):
+        r = abs(1 / steer)
+        slope_sign = get_sign(-math.tan(vel[0]/vel[1]))
+        dir = -get_sign(steer)
+        dx = vel[0]
+        dy = vel[1]
+        mag = math.sqrt(vel[0] * vel[0] + vel[1] * vel[1])
+        dx /= mag
+        dy /= mag
+        rotation_mat = np.array([[0, dir],
+                                 [-dir, 0]])
+        to_centre = (r*np.array([dx, dy])) @ rotation_mat
+        #x3 = arcpoint1.x + slope_sign * dir * r * dy
+        #y3 = arcpoint1.y - slope_sign * dir * r * dx
+        x3 = to_centre[0] + arcpoint1.x
+        y3 = to_centre[1] + arcpoint1.y
+        c = Node(x3, y3)
+
+        return cls(c, r, steer)
 
     def get_centre(self):
         """Returns the x coordinate of the node"""
@@ -91,5 +112,9 @@ class DubinCircle:
         v2 = np.array([p2.x - self.c.x,
                        p2.y - self.c.y])
         theta = math.atan2(v2[1], v2[0]) - math.atan2(v1[1], v1[0])
+        if theta<0 and self.dir < 0:
+            theta = theta + 2*math.pi
+        elif theta>0 and self.dir > 0:
+            theta = theta - 2*math.pi
 
         return theta
