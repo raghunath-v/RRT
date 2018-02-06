@@ -166,6 +166,10 @@ def getDubinCircles(node, vel, acc, kinematic=False):
         radius = get_radius(vel, acc)
     k = radius / math.sqrt(1 + slope ** 2)
 
+    if(vel[1]==0):
+        slope = 0
+        k = 0
+
     #Direction
     if vel[1] < 0:
         direc = -1/radius

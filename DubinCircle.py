@@ -56,7 +56,7 @@ class DubinCircle:
     @classmethod
     def fromVel(cls, arcpoint1, steer, vel):
         r = abs(1 / steer)
-        slope_sign = get_sign(-math.tan(vel[0]/vel[1]))
+        #slope_sign = get_sign(-math.tan(vel[0]/vel[1]))
         dir = -get_sign(steer)
         dx = vel[0]
         dy = vel[1]

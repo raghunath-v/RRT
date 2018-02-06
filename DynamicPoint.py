@@ -73,7 +73,11 @@ class DynamicPoint:
                 self.pos_y = self.current_action[0].y
                 #TODO Setting velocity to dirct to the next point
                 if self.current_action[1] == 0:
-                    direc = math.atan((self.sling_path[-1][0].y-self.pos_y)/(self.sling_path[-1][0].x-self.pos_x))
+                    direc = 0
+                    if self.sling_path[-1][0].x-self.pos_x < 0:
+                        direc = math.pi + math.atan((self.sling_path[-1][0].y-self.pos_y)/(self.sling_path[-1][0].x-self.pos_x))
+                    else:
+                        direc = math.atan((self.sling_path[-1][0].y - self.pos_y) / (self.sling_path[-1][0].x - self.pos_x))
                     vel_mag = math.sqrt(np.dot(self.current_vel, self.current_vel))
                     self.current_vel[0] = vel_mag * math.cos(direc)
                     self.current_vel[1] = vel_mag * math.sin(direc)
@@ -154,7 +158,7 @@ class DynamicPoint:
         # A path is a list of nodes
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
         acc_series = get_acceleration_series(vel_series, self.acc_max)
-        self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series, obstacles=obstacles)
+        self.sling_path, self.sling_vel, self.sling_acc = create_sling_path(self.path, vel_series, acc_series, obstacles=None) #TODO: set it back to obstacles
         self.sling_path_calculated = self.sling_path
         #print("Path Generated : ", self.sling_path_calculated)
         self.node_count_sling = len(self.sling_path)
@@ -162,20 +166,20 @@ class DynamicPoint:
         self.sling_vel = [el for el in reversed(self.sling_vel)]
         self.sling_acc = [el for el in reversed(self.sling_acc)]
 
+        for el in self.sling_path:
+            cir = Circle(el[0].get_scaled_point(), 3)
+            cir.draw(self.win)
+        #for action in self.sling_path_calculated:
+        #    self.body = Circle(action[0].get_scaled_point(), self.body_radius)
+        #    self.body.setFill('yellow')
+        #    self.body.draw(self.win)
+
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
         #print((self.pos_x, self.pos_x), self.total_time)
         # Draw the new path
-        if self.sling_path_calculated is not None:
-            self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
-                for action in self.sling_path_calculated]
-            for el in self.sling_path_drawables:
-                el.draw(self.win)
-            #for action in self.sling_path_calculated:
-            #    self.body = Circle(action[0].get_scaled_point(), self.body_radius)
-            #    self.body.setFill('yellow')
-            #    self.body.draw(self.win)
+
 
         if self.circle is not None:
             dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
