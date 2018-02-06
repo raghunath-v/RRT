@@ -81,18 +81,20 @@ class DynamicPoint:
                 #self.current_vel = self.sling_vel.pop()
                 self.current_acc = self.sling_acc.pop()
                 self.new_action = True
+                print("Status: ", self.current_action[0], self.current_action[1], self.current_vel, self.current_acc)
 
         # are we going into a circle?
         if (self.current_action[1] != 0):
             if self.new_action:
                 #self.set_circle_params()
                 #self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
+                #print("Status: ",self.current_action[0], self.current_action[1], self.current_vel)
                 self.circle = DubinCircle.fromVel(self.current_action[0], self.current_action[1], self.current_vel)
                 self.T = self.circle.arclength(self.current_action[0], self.sling_path[-1][0]) / \
                          math.sqrt(np.dot(self.current_vel, self.current_vel))
                 self.theta = self.circle.arcangle(self.current_action[0], self.sling_path[-1][0])
-                if self.theta<0:
-                    self.theta = 2*math.pi + self.theta
+                #if self.theta<0:
+                #    self.theta = 2*math.pi + self.theta
                 print("theta:", self.theta)
                 self.n = self.T / self.dt
                 self.beta = self.theta / self.n
@@ -101,7 +103,8 @@ class DynamicPoint:
         else:
             # we are moving straight
             self.move()
-
+        print("Velocity:", math.sqrt(np.dot(self.current_vel,self.current_vel)),
+              "Accel:", math.sqrt(np.dot(self.current_acc, self.current_acc)))
         #self.total_time += self.dt
 
     def move_circular(self):
@@ -130,8 +133,9 @@ class DynamicPoint:
     def move(self):
         #print(self.current_vel)
         angle = atan(self.current_vel[1] / self.current_vel[0])
-        self.current_acc[0] = self.acc_max * cos(angle)
-        self.current_acc[1] = self.acc_max * sin(angle)
+        acc_mag = math.sqrt(np.dot(self.current_acc, self.current_acc))
+        self.current_acc[0] = acc_mag * cos(angle)
+        self.current_acc[1] = acc_mag * sin(angle)
 
         self.current_vel[0] = self.current_vel[0] + self.current_acc[0] * self.dt
         self.current_vel[1] = self.current_vel[1] + self.current_acc[1] * self.dt
