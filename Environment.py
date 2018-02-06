@@ -33,17 +33,23 @@ class Environment:
         self.quick_draw = quick_draw
 
     def gen_rrt(self, rrt_setup):
-        self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
-            rrt_setup, self.win)
-        self.rrt.generate()
-        print(self.rrt.path)
-        self.player.add_path(self.rrt.optimal_path)
-        print(self.rrt.optimal_path)
         if isinstance(self.player, DynamicPoint) or isinstance(self.player, KinematicCar):
-            self.player.add_sling_path(self.goal, self.obstacles)
-        self.rrt.set_graphicals(self.quick_draw)
-
-        #self.rrt.remove_graphicals()
+            good_rrt = False
+            while not good_rrt:
+                self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
+                rrt_setup, self.win, goal_rate=10)
+                self.rrt.generate()
+                self.player.add_path(self.rrt.optimal_path)
+                result = self.player.add_sling_path(self.goal, self.obstacles)
+                if result != False:
+                    good_rrt = True
+            self.rrt.set_graphicals(self.quick_draw)
+        else:
+            self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
+            rrt_setup, self.win, goal_rate=10)
+            self.rrt.generate()
+            self.player.add_path(self.rrt.optimal_path)
+            self.rrt.set_graphicals(self.quick_draw)
 
     def run(self, rrt_setup):
         self.init_draw()

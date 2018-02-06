@@ -12,7 +12,7 @@ from BoundingArea import BoundingArea
 from Goal import Goal
 from g_tools import emit_verbose
 class RRT:
-    def __init__(self, bounding_area, obstacles, player, goal, rrt_setup, win, goal_rate=3, lower_k = None, verbose=True):
+    def __init__(self, bounding_area, obstacles, player, goal, rrt_setup, win, goal_rate=3, verbose=True):
         # related to the program at a whole
         self.win = win
         self.drawables = None
@@ -22,7 +22,6 @@ class RRT:
         self.player = player
         self.goal = goal
         self.goal_rate = goal_rate
-        self.lower_k = lower_k
         # regarding the graph part
         self.graph = defaultdict(set)
         # Relating specifically to RRT

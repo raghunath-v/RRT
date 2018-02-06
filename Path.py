@@ -37,15 +37,14 @@ def get_tangents(Circle1, Circle2):
         C2 = C1
         C1 = temp
         swapped = True
-        print("Im swapping")
 
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
 
     #print(R1, R2)
     if(R1 + R2 > d):
-       print(R1, R2)
-       print(d)
+        print("Error: Radii were to close")
+        return False
     alpha = math.acos((R1-R2)/d)
     beta = math.acos((R1+R2)/d)
 
@@ -140,6 +139,8 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False, obstacles=None, bo
     for circle1 in [C1_1, C2_1]:
         for circle2 in [C1_2, C2_2]:
             tang = get_tangents(circle1, circle2)
+            if not tang:
+                return False
             pathLength = circle1.arclength(P1, tang[0][0])
             pathLength += tang[0][0].dist_to(tang[0][1])
 
@@ -222,6 +223,8 @@ def create_kinematic_sling_path(path, vel_series, turning_radius, obstacles=None
     for i in range(len(path)-1):
         best_dubin_path = getBestDubinPath(path[i], vel_series[i], turning_radius,
             path[i+1], vel_series[i+1], turning_radius, kinematic=True, obstacles=obstacles)
+        if not best_dubin_path:
+            return False, False
         # Insert new nodes from dubin path
         new_path.append(best_dubin_path[0])     # The starting node in dubin path
         new_path.append(best_dubin_path[1])     # Tangent point T1
@@ -237,8 +240,7 @@ def create_kinematic_sling_path(path, vel_series, turning_radius, obstacles=None
     # Append goal node, velocity and and acceleration
     new_path.append([path[len(path) - 1], 0])
     new_vel_series.append(vel_series[len(path) - 1])
-    return new_path, new_vel_series
-
+    return ignore_silly_nodes(new_path, new_vel_series, None)
 def create_sling_path(path, vel_series, acc_series, obstacles=None):
     #get_velocity_series(path, vel_start, vel_goal)
     #get_acceleration_series(path, acc_max)
@@ -248,7 +250,8 @@ def create_sling_path(path, vel_series, acc_series, obstacles=None):
     for i in range(len(path)-1):
         best_dubin_path = getBestDubinPath(path[i], vel_series[i], acc_series[i],
                          path[i+1], vel_series[i+1], acc_series[i+1], obstacles=obstacles)
-
+        if not best_dubin_path:
+            return False, False, False
         # Insert new nodes from dubin path
         new_path.append(best_dubin_path[0])     # The starting node in dubin path
         new_path.append(best_dubin_path[1])     # Tangent point T1
@@ -289,25 +292,43 @@ def create_sling_path(path, vel_series, acc_series, obstacles=None):
 
 
 def ignore_silly_nodes(path_ser, vel_ser, acc_ser):
-    precision = 0.25
-    add_entry = True
-    new_path_ser = []
-    new_vel_ser = []
-    new_acc_ser = []
-    for i in range(len(path_ser) - 1):
-        if path_ser[i][1] != 0:
-            if path_ser[i][0].dist_to(path_ser[i+1][0]) < precision:
-                add_entry = False
-                #path_ser[i][1] = path_ser[i+1][1]
-        if add_entry == True:
-            new_path_ser.append(path_ser[i])
-            new_vel_ser.append(vel_ser[i])
-            new_acc_ser.append(acc_ser[i])
+    if acc_ser is None:
+        precision = 0.25
         add_entry = True
-    new_path_ser.append(path_ser[len(path_ser) - 1])
-    new_vel_ser.append(vel_ser[len(path_ser) - 1])
-    new_acc_ser.append(acc_ser[len(path_ser) - 1])
-    return new_path_ser, new_vel_ser, new_acc_ser
+        new_path_ser = []
+        new_vel_ser = []
+        for i in range(len(path_ser) - 1):
+            if path_ser[i][1] != 0:
+                if path_ser[i][0].dist_to(path_ser[i+1][0]) < precision:
+                    add_entry = False
+                    #path_ser[i][1] = path_ser[i+1][1]
+            if add_entry == True:
+                new_path_ser.append(path_ser[i])
+                new_vel_ser.append(vel_ser[i])
+            add_entry = True
+        new_path_ser.append(path_ser[len(path_ser) - 1])
+        new_vel_ser.append(vel_ser[len(path_ser) - 1])
+        return new_path_ser, new_vel_ser
+    else: 
+        precision = 0.25
+        add_entry = True
+        new_path_ser = []
+        new_vel_ser = []
+        new_acc_ser = []
+        for i in range(len(path_ser) - 1):
+            if path_ser[i][1] != 0:
+                if path_ser[i][0].dist_to(path_ser[i+1][0]) < precision:
+                    add_entry = False
+                    #path_ser[i][1] = path_ser[i+1][1]
+            if add_entry == True:
+                new_path_ser.append(path_ser[i])
+                new_vel_ser.append(vel_ser[i])
+                new_acc_ser.append(acc_ser[i])
+            add_entry = True
+        new_path_ser.append(path_ser[len(path_ser) - 1])
+        new_vel_ser.append(vel_ser[len(path_ser) - 1])
+        new_acc_ser.append(acc_ser[len(path_ser) - 1])
+        return new_path_ser, new_vel_ser, new_acc_ser
 
 
 if __name__=='__main__': #Test for dynamic

@@ -60,6 +60,7 @@ class KinematicCar:
         self.next_action = None
         
     def set_velocity(self, goal):
+        self.vel_magnitude = self.vel_max
         self.total_time+=self.dt
         if (abs(self.pos_x - self.next_action[0].x) < self.tolerance) and (abs(self.pos_y - self.next_action[0].y) < self.tolerance):
             self.pos_x = self.next_action[0].x
@@ -78,9 +79,16 @@ class KinematicCar:
                 return
             self.next_action = self.sling_path[-1]
             if(self.current_action[1] !=0):
-                self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
+                #self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
+                vel_x = self.vel_magnitude*cos(self.theta)
+                vel_y = self.vel_magnitude*sin(self.theta)
+
+                self.circle = DubinCircle.fromVel(self.current_action[0], self.current_action[1], np.array([vel_x,vel_y]))
             else:
-                self.theta = atan((self.pos_y-self.next_action[0].y)/(self.pos_x-self.next_action[0].x))
+                if (self.next_action[0].x - self.pos_x) < 0:
+                    self.theta = math.pi + atan((self.pos_y-self.next_action[0].y)/(self.pos_x-self.next_action[0].x))
+                else:
+                    self.theta = atan((self.pos_y-self.next_action[0].y)/(self.pos_x-self.next_action[0].x))
         else:
             # keep doing the current action
             if self.current_action[1] != 0:
@@ -93,7 +101,6 @@ class KinematicCar:
             if rot < 0:
                 self.phi = self.phi_max
             else:
-                print('hello')
                 self.phi = - self.phi_max
         else:
             self.phi = 0
@@ -101,6 +108,7 @@ class KinematicCar:
         self.pos_y+= self.vel_magnitude*sin(self.theta)*self.dt
         # according to the lecture, this is the order of things
         self.theta += (self.vel_magnitude/self.length)*tan(self.phi)*self.dt
+        print(self.theta)
         self.set_graphicals()
 
     def add_path(self, path):
@@ -110,7 +118,8 @@ class KinematicCar:
          # A path is a list of nodes
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
         self.sling_path,_ = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius, obstacles=None)
-        print(self.sling_path)
+        if not self.sling_path:
+            return False
         self.sling_path = [el for el in reversed(self.sling_path)]
         self.current_action = self.sling_path.pop()
         self.next_action = self.sling_path[-1]
