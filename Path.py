@@ -102,6 +102,8 @@ def get_tangents(Circle1, Circle2):
     return tangents
 
 def get_velocity_at_circle(start_pos, start_vel, steer, final_pos):
+    if type(start_vel) is list:
+        start_vel = np.array(start_vel)
     radius = abs(1/steer)
     side = math.sqrt((final_pos.x - start_pos.x)**2 + (final_pos.y - start_pos.y)**2)
     angle = math.acos(1 - (side**2/(2*radius**2)))
@@ -201,11 +203,11 @@ def get_acceleration_series(path, acc_max):
     return acc_series
 
 def find_acc(u, v, S):
-    u_mag = math.sqrt(u[0]**2 + u[1]**2)
+    u_mag = math.sqrt(u[0] ** 2 + u[1] ** 2)
     v_mag = math.sqrt(v[0] ** 2 + v[1] ** 2)
     #TODO Throw an error if u and v are not aligned
     angle = math.atan(u[1]/u[0])
-    acc_mag = (v_mag ** 2 - u_mag ** 2) / 2 * S
+    acc_mag = (v_mag ** 2 - u_mag ** 2) / (2 * S)
     acceleration = np.array([acc_mag*math.cos(angle), acc_mag*math.sin(angle)])
     return acceleration
 
@@ -221,9 +223,13 @@ def create_kinematic_sling_path(path, vel_series, turning_radius, obstacles=None
         new_path.append(best_dubin_path[1])     # Tangent point T1
         new_path.append(best_dubin_path[2])     # Tangent point T2
         # Insert new velocities for dubin path
-        new_vel_series.append(vel_series[i])    # Velocity at the start point of dubin
-        new_vel_series.append(vel_series[i])    # Velocity at the tangent T1
-        new_vel_series.append(vel_series[i+1])  # Velocity at the tangent T2
+        new_vel_series.append(vel_series[i])            # Velocity at the start point of dubin
+        new_vel = get_velocity_at_circle(best_dubin_path[0][0], vel_series[i],
+                                        best_dubin_path[0][1], best_dubin_path[1][0])  # Velocity at the tangent T1
+        new_vel_series.append(new_vel)
+        new_vel = get_velocity_at_circle(path[i+1], vel_series[i+1],
+                                         best_dubin_path[2][1], best_dubin_path[2][0])  # Velocity at the tangent T2
+        new_vel_series.append(new_vel)
     # Append goal node, velocity and and acceleration
     new_path.append([path[len(path) - 1], 0])
     new_vel_series.append(vel_series[len(path) - 1])
@@ -304,7 +310,7 @@ if __name__=='__main__': #Test for dynamic
     goal = Node(10, 15)
     init = Node(1, 2)
     v_in = np.array([0.9, -0.2])
-    v_fin = np.array([0.5, -0.5])
+    v_fin = np.array([0.5, 0.5])
     a_max = 0.3
 
     canvas_width = 800
@@ -326,7 +332,7 @@ if __name__=='__main__': #Test for dynamic
     g = Circle(init.get_scaled_point(), 5)
     g.setOutline('Green')
     g.setFill('Green')
-    g.draw(win)
+    #g.draw(win)
 
     g = Circle(goal.get_scaled_point(), 5)
     g.setOutline('Red')
@@ -338,9 +344,11 @@ if __name__=='__main__': #Test for dynamic
     dubin_circ = DubinCircle.fromVel(dubin_path[0][0], dubin_path[0][1], v_in)
     g = Circle(dubin_circ.get_scaled_centre(), scale_vectors(dubin_circ.r))
     g.setOutline('Green')
-    g.draw(win)
+    #g.draw(win)
     #print("Goal steer: ", dubin_path[2][1])
     #dubin_circ = DubinCircle.fromArc(dubin_path[2][0], goal, dubin_path[2][1])      #TODO: This will not work
+
+    print("Status: ", goal, dubin_path[2][1], v_fin)
     dubin_circ = DubinCircle.fromVel(goal, dubin_path[2][1], v_fin)
     g = Circle(dubin_circ.get_scaled_centre(), scale_vectors(dubin_circ.r))
     g.setOutline('Red')
@@ -349,14 +357,14 @@ if __name__=='__main__': #Test for dynamic
     g = Circle(dubin_path[1][0].get_scaled_point(), 5)
     g.setOutline('Green')
     g.setFill('Green')
-    g.draw(win)
+    #g.draw(win)
 
     g = Circle( dubin_path[2][0].get_scaled_point(), 5)
     g.setOutline('Blue')
     g.setFill('Blue')
-    g.draw(win)
+    #g.draw(win)
 
-    Line(dubin_path[1][0].get_scaled_point(), dubin_path[2][0].get_scaled_point()).draw(win)
+    #Line(dubin_path[1][0].get_scaled_point(), dubin_path[2][0].get_scaled_point()).draw(win)
 
 
 

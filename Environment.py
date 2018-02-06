@@ -36,10 +36,13 @@ class Environment:
         self.rrt = RRT(self.bounding_area, self.obstacles, self.player, self.goal, 
             rrt_setup, self.win)
         self.rrt.generate()
+        print(self.rrt.path)
         self.player.add_path(self.rrt.optimal_path)
+        print(self.rrt.optimal_path)
         if isinstance(self.player, DynamicPoint) or isinstance(self.player, KinematicCar):
             self.player.add_sling_path(self.goal, self.obstacles)
         self.rrt.set_graphicals(self.quick_draw)
+
         #self.rrt.remove_graphicals()
 
     def run(self, rrt_setup):

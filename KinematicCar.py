@@ -84,13 +84,17 @@ class KinematicCar:
         else:
             # keep doing the current action
             if self.current_action[1] != 0:
-                self.move(rot=True)
+                self.move(rot=self.current_action[1])
             else:
                 self.move()
 
     def move(self, rot=False):
         if rot:
-            self.phi = self.phi_max
+            if rot < 0:
+                self.phi = self.phi_max
+            else:
+                print('hello')
+                self.phi = - self.phi_max
         else:
             self.phi = 0
         self.pos_x+= self.vel_magnitude*cos(self.theta)*self.dt
@@ -106,6 +110,7 @@ class KinematicCar:
          # A path is a list of nodes
         vel_series = get_velocity_series(self.path, self.vel_start, goal.vel, self.vel_max)
         self.sling_path,_ = create_kinematic_sling_path(self.path, vel_series, self.max_turn_radius, obstacles=None)
+        print(self.sling_path)
         self.sling_path = [el for el in reversed(self.sling_path)]
         self.current_action = self.sling_path.pop()
         self.next_action = self.sling_path[-1]
