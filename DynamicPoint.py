@@ -38,6 +38,7 @@ class DynamicPoint:
         self.acc_arrow = None
         self.win = win
         self.sling_path_drawables = []
+        self.get_trace = True
 
         # for actions
         self.current_action = None
@@ -186,14 +187,14 @@ class DynamicPoint:
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
 
-        if self.circle is not None:
+        if self.circle is not None and self.get_trace == False:
             dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
             dubinc.setOutline('Green')
             dubinc.draw(self.win)
 
-        if self.body is not None:
+        if self.body is not None and self.get_trace == False:
             self.body.undraw()
-        self.body = Circle(Point(draw_x, draw_y), self.body_radius)
+        self.body = Circle(Point(draw_x, draw_y), self.body_radius/10)
         self.body.setFill('yellow')
         self.body.draw(self.win)
         if self.vel_arrow:

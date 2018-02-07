@@ -39,6 +39,7 @@ class DifferentialDrive:
         self.needed_direction_arrow = None
         self.body_radius = 10
         self.win = win
+        self.get_trace = True
 
     def set_velocity(self, goal):
         self.total_time+=self.dt
@@ -52,6 +53,8 @@ class DifferentialDrive:
             if self.path_idx == self.node_count - 1:
                 self.goal_vel_x = goal.vel_x
                 self.goal_vel_y = goal.vel_y
+                if self.goal_vel_x == 0:
+                    self.goal_vel_x += 01e-10
                 self.alpha = atan(self.goal_vel_y/self.goal_vel_x)
                 self.in_final_rotation = True
                 self.final_rotate()
@@ -60,6 +63,9 @@ class DifferentialDrive:
                 self.path_idx+=1
                 self.next_node = self.path[self.path_idx]
                 # calculate the degree needed to move
+                #TODO: small value added to vel_x
+                if self.vel_x == 0:
+                    self.vel_x += 01e-10
                 self.beta = atan(self.vel_y/self.vel_x) # degs from pos x
                 wanted_x = self.next_node.x - self.pos_x
                 wanted_y = self.next_node.y - self.pos_y

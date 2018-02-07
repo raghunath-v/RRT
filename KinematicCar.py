@@ -22,6 +22,8 @@ class KinematicCar:
         # Specific to differential drive
         self.phi_max = phi_max
         self.length = length
+        if self.vel_x == 0:
+            self.vel_x+=1e-10
         self.theta = atan(self.vel_y/self.vel_x)
         self.max_turn_radius = self.length/tan(self.phi_max) 
         # makes sense to me to set turning to 0 in refernece
@@ -89,6 +91,7 @@ class KinematicCar:
                     self.theta = math.pi + atan((self.pos_y-self.next_action[0].y)/(self.pos_x-self.next_action[0].x))
                 else:
                     self.theta = atan((self.pos_y-self.next_action[0].y)/(self.pos_x-self.next_action[0].x))
+
         else:
             # keep doing the current action
             if self.current_action[1] != 0:
@@ -136,13 +139,15 @@ class KinematicCar:
         draw_front_y = g.scale(self.pos_y + self.length*sin(self.theta))
         
         if self.body_back is not None:
-            self.body_back.undraw()
-        self.body_back = Circle(Point(draw_back_x, draw_back_y), self.body_back_radius)
+            pass
+            #self.body_back.undraw()
+        self.body_back = Circle(Point(draw_back_x, draw_back_y), self.body_back_radius/10)
         self.body_back.setFill('yellow')
         self.body_back.draw(self.win)
         if self.body_front is not None:
-            self.body_front.undraw()
-        self.body_front = Circle(Point(draw_front_x, draw_front_y), self.body_front_radius)
+            pass
+            #self.body_front.undraw()
+        self.body_front = Circle(Point(draw_front_x, draw_front_y), self.body_front_radius/10)
         self.body_front.setFill('yellow')
         self.body_front.draw(self.win)
         if self.turning_arrow is not None:
@@ -159,4 +164,4 @@ class KinematicCar:
         if self.circle is not None:
             dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
             dubinc.setOutline('Green')
-            dubinc.draw(self.win)
+            #dubinc.draw(self.win)

@@ -160,6 +160,8 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False, obstacles=None, bo
     return bestPath
 
 def getDubinCircles(node, vel, acc, kinematic=False):
+    if vel[1] == 0:
+        vel[1]=1e-10
     slope = -vel[0] / vel[1]
     if kinematic:
         radius = acc
