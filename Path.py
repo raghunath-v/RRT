@@ -41,12 +41,15 @@ def get_tangents(Circle1, Circle2):
     theta = math.atan(C1.slope_to(C2))
     d = C1.dist_to(C2)
 
-    #print(R1, R2)
-    if(R1 + R2 > d):
-        print("Error: Radii were to close")
-        return False
+    inner_tangents_exist = True
+    if R1 + R2 > d:
+        inner_tangents_exist = False
+        print("Warning: Radii were to close")
+        #return None
+
     alpha = math.acos((R1-R2)/d)
-    beta = math.acos((R1+R2)/d)
+    if inner_tangents_exist:
+        beta = math.acos((R1+R2)/d)
 
     #Outer tangents
     T1_1 = Node(C1.x + R1 * (math.cos(alpha + theta)),
@@ -74,29 +77,30 @@ def get_tangents(Circle1, Circle2):
             tangents.append((T2_1, T2_2))
 
     #Inner tangents
-    T1_1 = Node(C1.x + R1 * (math.cos(beta + theta)),
-                C1.y + R1 * (math.sin(beta + theta)))
-    T1_2 = Node(C2.x + R2 * (math.cos(-(math.pi - beta) + theta)),
-                C2.y + R2 * (math.sin(-(math.pi - beta) + theta)))
-    T2_1 = Node(C1.x + R1 * (math.cos(-beta + theta)),
-                C1.y + R1 * (math.sin(-beta + theta)))
-    T2_2 = Node(C2.x + R2 * (math.cos(math.pi - beta + theta)),
-                C2.y + R2 * (math.sin(math.pi - beta + theta)))
+    if inner_tangents_exist:
+        T1_1 = Node(C1.x + R1 * (math.cos(beta + theta)),
+                    C1.y + R1 * (math.sin(beta + theta)))
+        T1_2 = Node(C2.x + R2 * (math.cos(-(math.pi - beta) + theta)),
+                    C2.y + R2 * (math.sin(-(math.pi - beta) + theta)))
+        T2_1 = Node(C1.x + R1 * (math.cos(-beta + theta)),
+                    C1.y + R1 * (math.sin(-beta + theta)))
+        T2_2 = Node(C2.x + R2 * (math.cos(math.pi - beta + theta)),
+                    C2.y + R2 * (math.sin(math.pi - beta + theta)))
 
-    if check_swap and swapped:
-        if (dir1 > 0 and dir2 < 0):
-            #print("Tan5")
-            tangents.append((T1_2, T1_1))
-        if (dir1 < 0 and dir2 > 0):
-            #print("Tan6")
-            tangents.append((T2_2, T2_1))
-    else:
-        if (dir1 > 0 and dir2 < 0):
-            #print("Tan7")
-            tangents.append((T1_1, T1_2))
-        if (dir1 < 0 and dir2 > 0):
-            #print("Tan8")
-            tangents.append((T2_1, T2_2))
+        if check_swap and swapped:
+            if (dir1 > 0 and dir2 < 0):
+                #print("Tan5")
+                tangents.append((T1_2, T1_1))
+            if (dir1 < 0 and dir2 > 0):
+                #print("Tan6")
+                tangents.append((T2_2, T2_1))
+        else:
+            if (dir1 > 0 and dir2 < 0):
+                #print("Tan7")
+                tangents.append((T1_1, T1_2))
+            if (dir1 < 0 and dir2 > 0):
+                #print("Tan8")
+                tangents.append((T2_1, T2_2))
 
     return tangents
 
@@ -140,7 +144,8 @@ def getBestDubinPath(P1, V1, A1, P2, V2, A2, kinematic=False, obstacles=None, bo
         for circle2 in [C1_2, C2_2]:
             tang = get_tangents(circle1, circle2)
             if not tang:
-                return False
+                continue
+                #return False
             pathLength = circle1.arclength(P1, tang[0][0])
             pathLength += tang[0][0].dist_to(tang[0][1])
 

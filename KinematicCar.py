@@ -75,6 +75,8 @@ class KinematicCar:
                 # theta and phi to match up with goal at the end
                 # it would be better to correct phi or something at
                 # the end
+                if goal.vel_x == 0:
+                    goal.vel_x = 1e-30
                 self.theta = atan(goal.vel_y/goal.vel_x)
                 self.phi = 0
                 self.set_graphicals()
