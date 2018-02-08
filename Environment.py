@@ -156,4 +156,5 @@ if __name__ == "__main__":
         }
         with open('best_strategies.json', 'w') as json_file:
             json.dump(best_strategies, json_file)
-        
+    print("Completed")
+    win.save('results/' + env_name + '_' + mdl_name + '.png')
