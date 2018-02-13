@@ -1,0 +1,16 @@
+{
+	"env_name": "P13",
+	"mdl_name": "differential_drive",
+	"delta_q": 1,
+	"k": 4000,
+	"rrt_strategy": 0,
+	"iterations": 7,
+	"mean": 62.55714285714347,
+	"std_dev": 1.5646607508677934,
+	"worst": 64.40000000000062,
+	"best": 59.90000000000058,
+	"mean_rrt": 3.385763645172119,
+	"std_dev_rrt": 0.6720321844984408,
+	"worst_rrt": 4.616506814956665,
+	"best_rrt": 2.676907777786255
+}

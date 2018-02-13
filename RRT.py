@@ -41,7 +41,7 @@ class RRT:
         # Other stuff
         self.verbose = verbose
 
-    def generate(self):
+    def generate(self, data_keep=False):
         #q_init will be the starting location of the player
         t = time.time()
         if(self.strategy == 0):
@@ -50,7 +50,8 @@ class RRT:
             self.rrt_star()
         emit_verbose("Generating graph for RRT took", self.verbose, var=time.time()-t)
         self.find_path()
-
+        if data_keep:
+            return time.time()-t 
     def simple_rrt(self):
         """Builds an RRT"""
         self.start_node = Node(self.player.pos_x, self.player.pos_y)
@@ -58,7 +59,6 @@ class RRT:
         self.closest_to_goal = self.start_node
         self.goal_node = Node(self.goal.pos_x, self.goal.pos_y)
         k=0
-        self.lower_k = 500
         while (not self.is_path_to_goal() and k < self.K):
             q_rand = self.gen_random_node()
             while not self.is_valid(q_rand):

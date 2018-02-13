@@ -1,0 +1,16 @@
+{
+	"env_name": "P1",
+	"mdl_name": "differential_drive",
+	"delta_q": 1,
+	"k": 4000,
+	"rrt_strategy": 0,
+	"iterations": 7,
+	"mean": 17.399999999999977,
+	"std_dev": 0,
+	"worst": 17.399999999999977,
+	"best": 17.399999999999977,
+	"mean_rrt": 0.0388078008379255,
+	"std_dev_rrt": 0.02556020503668059,
+	"worst_rrt": 0.0743250846862793,
+	"best_rrt": 0.01562809944152832
+}

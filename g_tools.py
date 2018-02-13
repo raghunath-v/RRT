@@ -66,7 +66,7 @@ def ray_intersects_segment(x, y, segment):
         intersect = m_blue >= m_red
     return intersect
 
-def segments_intersect(ax, ay, bx, by, s):
+sdef segments_intersect(ax, ay, bx, by, s):
     cx, cy = s[0][0], s[0][1]
     dx, dy = s[1][0], s[1][1]
     # calculate the four determinants

@@ -1,0 +1,1 @@
+{"env_name": "P2", "mdl_name": "dynamic_point", "delta_q": 0.7, "k": 3500, "rrt_strategy": 0, "iterations": 10, "mean": 38.03000000000024, "std_dev": 10.719333001637796, "worst": 68.80000000000037, "best": 29.50000000000015}

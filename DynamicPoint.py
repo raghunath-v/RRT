@@ -89,7 +89,6 @@ class DynamicPoint:
 
                 self.current_acc = self.sling_acc.pop()
                 self.new_action = True
-                print("Status: ", self.current_action[0], self.current_action[1], self.current_vel, self.current_acc)
 
         # are we going into a circle?
         if (self.current_action[1] != 0):
@@ -103,7 +102,6 @@ class DynamicPoint:
                 self.theta = self.circle.arcangle(self.current_action[0], self.sling_path[-1][0])
                 #if self.theta<0:
                 #    self.theta = 2*math.pi + self.theta
-                print("theta:", self.theta)
                 self.n = self.T / self.dt
                 self.beta = self.theta / self.n
                 self.new_action = False
@@ -126,8 +124,9 @@ class DynamicPoint:
                 #                           self.current_action[0].dist_to(self.sling_path[-1][0]))
                 self.new_action = False
             self.move()
-        print("Velocity:", math.sqrt(np.dot(self.current_vel,self.current_vel)),
-              "Accel:", self.current_acc)
+
+        #print("Velocity:", math.sqrt(np.dot(self.current_vel,self.current_vel)),
+        #      "Accel:", self.current_acc)
         #self.total_time += self.dt
 
     def move_circular(self):
@@ -151,7 +150,7 @@ class DynamicPoint:
         self.current_acc[1] = self.acc_max * sin(angle)
 
         self.n -= 1
-        self.set_graphicals()
+        #self.set_graphicals()
 
     def move(self):
         #print(self.current_vel)
@@ -163,7 +162,7 @@ class DynamicPoint:
         self.pos_x += self.dt * self.current_vel[0]
         self.pos_y += self.dt * self.current_vel[1]
 
-        self.set_graphicals()
+        #self.set_graphicals()
 
     def add_path(self, path):
         # A path is a list of nodes
@@ -184,6 +183,7 @@ class DynamicPoint:
         self.sling_vel = [el for el in reversed(self.sling_vel)]
         self.sling_acc = [el for el in reversed(self.sling_acc)]
         
+        '''
         if self.sling_path_calculated is not None:
             self.sling_path_drawables = [Circle(action[0].get_scaled_point(), 3) 
                 for action in self.sling_path_calculated]
@@ -193,11 +193,12 @@ class DynamicPoint:
         for el in self.sling_path:
             cir = Circle(el[0].get_scaled_point(), 3)
             cir.draw(self.win)
+        '''
         #for action in self.sling_path_calculated:
         #    self.body = Circle(action[0].get_scaled_point(), self.body_radius)
         #    self.body.setFill('yellow')
         #    self.body.draw(self.win)
-
+    
     def set_graphicals(self):
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
