@@ -56,6 +56,10 @@ class KinematicCar:
         self.body_back_radius = 10
         self.body_front_radius = 5
         self.win = win
+        self.get_trace = False  # Change this to see the car in action or just to see the trace
+        if self.get_trace is True:
+            self.body_back_radius /= 10
+            self.body_front_radius /= 10
 
         self.tolerance = self.vel_max*self.dt
         self.current_action = None
@@ -142,16 +146,14 @@ class KinematicCar:
         draw_front_x = g.scale(self.pos_x + self.length*cos(self.theta))
         draw_front_y = g.scale(self.pos_y + self.length*sin(self.theta))
         
-        if self.body_back is not None:
-            pass
-            #self.body_back.undraw()
-        self.body_back = Circle(Point(draw_back_x, draw_back_y), self.body_back_radius/10)
+        if self.body_back is not None and self.get_trace is False:
+            self.body_back.undraw()
+        self.body_back = Circle(Point(draw_back_x, draw_back_y), self.body_back_radius)
         self.body_back.setFill('yellow')
         self.body_back.draw(self.win)
-        if self.body_front is not None:
-            pass
-            #self.body_front.undraw()
-        self.body_front = Circle(Point(draw_front_x, draw_front_y), self.body_front_radius/10)
+        if self.body_front is not None and self.get_trace is False:
+            self.body_front.undraw()
+        self.body_front = Circle(Point(draw_front_x, draw_front_y), self.body_front_radius)
         self.body_front.setFill('yellow')
         self.body_front.draw(self.win)
         if self.turning_arrow is not None:
@@ -168,4 +170,4 @@ class KinematicCar:
         if self.circle is not None:
             dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
             dubinc.setOutline('Green')
-            #dubinc.draw(self.win)
+            dubinc.draw(self.win)

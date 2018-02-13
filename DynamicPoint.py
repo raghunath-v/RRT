@@ -38,7 +38,9 @@ class DynamicPoint:
         self.acc_arrow = None
         self.win = win
         self.sling_path_drawables = []
-        self.get_trace = True
+        self.get_trace = False  # Change this to see the car in action or just to see the trace
+        if self.get_trace is True:
+            self.body_radius /= 10
 
         # for actions
         self.current_action = None
@@ -72,6 +74,7 @@ class DynamicPoint:
                 self.current_action = self.sling_path.pop()
                 self.pos_x = self.current_action[0].x
                 self.pos_y = self.current_action[0].y
+                vel_dummy = self.sling_vel.pop()
                 #TODO Setting velocity to dirct to the next point
                 if self.current_action[1] == 0:
                     direc = 0
@@ -83,7 +86,7 @@ class DynamicPoint:
                     self.current_vel[0] = vel_mag * math.cos(direc)
                     self.current_vel[1] = vel_mag * math.sin(direc)
 
-                #self.current_vel = self.sling_vel.pop()
+
                 self.current_acc = self.sling_acc.pop()
                 self.new_action = True
                 print("Status: ", self.current_action[0], self.current_action[1], self.current_vel, self.current_acc)
@@ -107,9 +110,24 @@ class DynamicPoint:
             self.move_circular()
         else:
             # we are moving straight
+            if self.new_action:
+                angle = atan(self.current_vel[1] / self.current_vel[0])
+                acc_mag = sqrt(np.dot(self.current_acc, self.current_acc))
+                vel_mag1 = sqrt(np.dot(self.current_vel, self.current_vel))
+                vel_mag2 = sqrt(np.dot(self.sling_vel[-1], self.sling_vel[-1]))
+                #print("vel1", vel_mag1, "vel2", vel_mag2)
+                acc_sign = 1
+                if(vel_mag2 < vel_mag1):
+                    acc_sign = -1
+
+                self.current_acc[0] = acc_sign * acc_mag * cos(angle)
+                self.current_acc[1] = acc_sign * acc_mag * sin(angle)
+                #self.current_acc = find_acc(self.current_vel, self.sling_vel[-1],
+                #                           self.current_action[0].dist_to(self.sling_path[-1][0]))
+                self.new_action = False
             self.move()
         print("Velocity:", math.sqrt(np.dot(self.current_vel,self.current_vel)),
-              "Accel:", math.sqrt(np.dot(self.current_acc, self.current_acc)))
+              "Accel:", self.current_acc)
         #self.total_time += self.dt
 
     def move_circular(self):
@@ -137,10 +155,7 @@ class DynamicPoint:
 
     def move(self):
         #print(self.current_vel)
-        angle = atan(self.current_vel[1] / self.current_vel[0])
-        acc_mag = math.sqrt(np.dot(self.current_acc, self.current_acc))
-        self.current_acc[0] = acc_mag * cos(angle)
-        self.current_acc[1] = acc_mag * sin(angle)
+
 
         self.current_vel[0] = self.current_vel[0] + self.current_acc[0] * self.dt
         self.current_vel[1] = self.current_vel[1] + self.current_acc[1] * self.dt
@@ -187,14 +202,14 @@ class DynamicPoint:
         draw_x = scale(self.pos_x)
         draw_y = scale(self.pos_y)
 
-        if self.circle is not None and self.get_trace == False:
+        if self.circle is not None and self.get_trace is False:
             dubinc = Circle(self.circle.c.get_scaled_point(), scale_vectors(self.circle.r))
             dubinc.setOutline('Green')
             dubinc.draw(self.win)
 
-        if self.body is not None and self.get_trace == False:
+        if self.body is not None and self.get_trace is False:
             self.body.undraw()
-        self.body = Circle(Point(draw_x, draw_y), self.body_radius/10)
+        self.body = Circle(Point(draw_x, draw_y), self.body_radius)
         self.body.setFill('yellow')
         self.body.draw(self.win)
         if self.vel_arrow:

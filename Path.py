@@ -198,6 +198,8 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
     vel_series = [vel_start]
     for i in range(1, len(path)-1):
         theta = math.atan(path[i].slope_to(path[i+1]))
+        if (path[i+1].x - path[i].x) < 0:
+            theta = theta + math.pi
         vel_x = vel_max * math.cos(theta)
         vel_y = vel_max * math.sin(theta)
         vel_series.append(np.array([vel_x, vel_y]))
@@ -207,7 +209,7 @@ def get_velocity_series(path, vel_start, vel_goal, vel_max):
 def get_acceleration_series(path, acc_max):
     # TODO: We reduce acceleration ALOT when we are going through a circle
     # find a way to NOT do that. SMALL RADIUS
-    scaleAcc = 0.6
+    scaleAcc = 1
     acc_series = [scaleAcc * np.array([acc_max/1.414, acc_max/1.414])]
     for i in range(1, len(path)-1):
         acc_series.append(scaleAcc * np.array([acc_max/1.414, acc_max/1.414]))
@@ -338,7 +340,7 @@ def ignore_silly_nodes(path_ser, vel_ser, acc_ser):
         return new_path_ser, new_vel_ser, new_acc_ser
 
 
-if __name__=='__main__': #Test for dynamic
+if __name__=='__test__': #Test for dynamic
     goal = Node(10, 15)
     init = Node(1, 2)
     v_in = np.array([0.9, -0.2])
@@ -411,7 +413,7 @@ if __name__=='__main__': #Test for dynamic
     win.close()
 
 
-if __name__=='__test__':  #This works
+if __name__=='__main__':  #This works
     goal = Node(10, 15)
     init = Node(1, 2)
     v_in = np.array([0.9, -0.2])
@@ -451,46 +453,47 @@ if __name__=='__test__':  #This works
     C2_goal = DubinCircle.fromVel(goal, -steer2, v_fin)
 
     # Draw everything
-    g = Circle(init.get_scaled_point(), 5)
-    g.setOutline('Green')
-    g.setFill('Green')
+    g = Circle(init.get_scaled_point(), 10)
+    g.setOutline('Yellow')
+    g.setFill('Black')
     g.draw(win)
 
     g = Circle(C1_init.get_scaled_centre(), scale_vectors(C1_init.r))
-    g.setOutline('Green')
+    g.setOutline('Red')
     g.draw(win)
 
     g = Circle(C2_init.get_scaled_centre(), scale_vectors(C2_init.r))
     g.setOutline('Green')
     g.draw(win)
 
-    g = Circle(goal.get_scaled_point(), 5)
-    g.setOutline('Red')
-    g.setFill('Red')
+    g = Circle(goal.get_scaled_point(), 10)
+    g.setOutline('Green')
+    g.setFill('Yellow')
     g.draw(win)
 
     g = Circle(C1_goal.get_scaled_centre(), scale_vectors(C1_goal.r))
-    g.setOutline('Black')
+    g.setOutline('Red')
     g.draw(win)
 
     g = Circle(C2_goal.get_scaled_centre(), scale_vectors(C2_goal.r))
-    g.setOutline('Black')
+    g.setOutline('Green')
     g.draw(win)
 
 
     #draw tangents
     for tan in tangents:
         g = Circle(tan[0].get_scaled_point(), 5)
-        g.setOutline('Green')
-        g.setFill('Green')
+        g.setOutline('Blue')
+        g.setFill('Blue')
         g.draw(win)
 
         g = Circle(tan[1].get_scaled_point(), 5)
         g.setOutline('Blue')
         g.setFill('Blue')
         g.draw(win)
-
-        Line(tan[0].get_scaled_point(), tan[1].get_scaled_point()).draw(win)
+        tan_line = Line(tan[0].get_scaled_point(), tan[1].get_scaled_point())
+        tan_line.setFill('Blue')
+        tan_line.draw(win)
 
     #Draw velocity vectors
     new = Node(init.x + (v_in[0]*3), init.y + (v_in[1]*3))
