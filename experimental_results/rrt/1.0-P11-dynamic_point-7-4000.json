@@ -1,0 +1,16 @@
+{
+	"env_name": "P11",
+	"mdl_name": "dynamic_point",
+	"delta_q": 1,
+	"k": 4000,
+	"rrt_strategy": 0,
+	"iterations": 7,
+	"mean": 10.899999999999977,
+	"std_dev": 0,
+	"worst": 10.899999999999977,
+	"best": 10.899999999999977,
+	"mean_rrt": 0.02461566243852888,
+	"std_dev_rrt": 0.010175483527343612,
+	"worst_rrt": 0.04712533950805664,
+	"best_rrt": 0.015039682388305664
+}

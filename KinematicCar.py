@@ -115,8 +115,7 @@ class KinematicCar:
         self.pos_y+= self.vel_magnitude*sin(self.theta)*self.dt
         # according to the lecture, this is the order of things
         self.theta += (self.vel_magnitude/self.length)*tan(self.phi)*self.dt
-        print(self.theta)
-        self.set_graphicals()
+        #self.set_graphicals()
 
     def add_path(self, path):
         self.path = path
@@ -132,10 +131,11 @@ class KinematicCar:
         self.next_action = self.sling_path[-1]
         self.circle = DubinCircle.fromArc(self.current_action[0], self.sling_path[-1][0], self.current_action[1])
         # draw once
+        '''
         for el in self.sling_path:
             cir = Circle(el[0].get_scaled_point(), 3)
             cir.draw(self.win)
-
+        '''
     def set_graphicals(self):
         draw_back_x = g.scale(self.pos_x)
         draw_back_y = g.scale(self.pos_y)

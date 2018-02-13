@@ -1,0 +1,1 @@
+{"env_name": "P13", "mdl_name": "kinematic_point", "delta_q": 0.7, "k": 4000, "rrt_strategy": 0, "iterations": 7, "mean": 51.88571428571475, "std_dev": 4.234358973725286, "worst": 55.10000000000051, "best": 41.900000000000325, "mean_rrt": 5.147072383335659, "std_dev_rrt": 0.9822641425721547, "worst_rrt": 6.49928617477417, "best_rrt": 3.564711570739746}

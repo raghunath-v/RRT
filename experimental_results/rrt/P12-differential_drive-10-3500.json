@@ -1,0 +1,12 @@
+{
+	"env_name": "P12",
+	"mdl_name": "differential_drive",
+	"delta_q": 0.7,
+	"k": 3500,
+	"rrt_strategy": 0,
+	"iterations": 10,
+	"mean": 26.450000000000102,
+	"std_dev": 4.818765402050681,
+	"worst": 31.200000000000173,
+	"best": 17.199999999999974
+}

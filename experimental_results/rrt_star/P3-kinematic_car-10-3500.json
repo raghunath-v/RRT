@@ -1,0 +1,1 @@
+{"env_name": "P3", "mdl_name": "kinematic_car", "delta_q": 0.7, "k": 3500, "rrt_strategy": 0, "iterations": 10, "mean": 116.15999999999767, "std_dev": 15.311577319139055, "worst": 137.39999999999648, "best": 92.69999999999901, "mean_rrt": 2.868683910369873, "worst_rrt": 4.74629282951355, "best_rrt": 1.7610604763031006}

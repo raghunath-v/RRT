@@ -1,0 +1,1 @@
+{"env_name": "P11", "mdl_name": "kinematic_point", "delta_q": 0.7, "k": 3500, "rrt_strategy": 0, "iterations": 10, "mean": 4.799999999999999, "std_dev": 0.0, "worst": 4.799999999999999, "best": 4.799999999999999}
